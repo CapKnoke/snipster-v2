@@ -1,17 +1,17 @@
-import Head from 'next/head';
-import Image from 'next/image';
-import Header from '@components/header';
+import { trpc } from '../utils/trpc';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }], {
+    enabled: !!session?.user?.name,
+  });
+  if (!welcomeQuery.data) {
+    return <div>Loading...</div>;
+  }
   return (
-    <div className="min-h-screen flex flex-col">
-      <Head>
-        <title>Snipster v2</title>
-        <meta name="description" content="The ultimate snippet sharing platform" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Header />
-      <main className="py-16 px-8 flex-1 flex flex-col justify-center items-center"></main>
-    </div>
+    <>
+      <h1>{welcomeQuery.data.greeting}</h1>
+    </>
   );
 }
