@@ -18,7 +18,7 @@ export default function Layout({ children }: LayoutProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header session={session} status={status} />
-      <main>{children}</main>
+      <main className="flex flex-col flex-grow justify-center items-center">{children}</main>
       {process.env.NODE_ENV !== 'production' && <ReactQueryDevtools initialIsOpen={false} />}
     </div>
   );
