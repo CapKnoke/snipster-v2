@@ -14,7 +14,10 @@ type CodeEditorProps = {
 };
 
 const CodeEditor = React.forwardRef(
-  ({ language = 'javascript', editable, placeholder, code }: CodeEditorProps, ref: Ref<ReactCodeMirrorRef>) => {
+  (
+    { language = 'javascript', editable, placeholder, code }: CodeEditorProps,
+    ref: Ref<ReactCodeMirrorRef>
+  ) => {
     const extensions = [EditorView.lineWrapping] as Extension[];
     const lang = loadLanguage(language);
     if (lang !== null) {
@@ -35,5 +38,7 @@ const CodeEditor = React.forwardRef(
     );
   }
 );
+
+CodeEditor.displayName = 'CodeEditor';
 
 export default CodeEditor;
