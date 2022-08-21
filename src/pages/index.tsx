@@ -8,7 +8,7 @@ export default function Home() {
   });
   if (!welcomeQuery.data) {
     return (
-      <div>
+      <div className="text-center">
         <h1 className="text-2xl">Loading...</h1>
       </div>
     );
