@@ -1,5 +1,5 @@
-import CreateSnippet from '~/features/createSnippet';
+import CreateSnippetForm from '@features/createSnippetForm';
 
 export default function Create() {
-  return <CreateSnippet />;
+  return <CreateSnippetForm />;
 }

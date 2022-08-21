@@ -24,6 +24,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex justify-between items-center bg-gray-900 py-6 px-4 sm:px-6 bg-opacity-40 backdrop-blur-lg drop-shadow-md">
         <div className="flex justify-start lg:w-0 lg:flex-1">
           <Link href="/">
+            <a>
               <Image
                 width={150}
                 height={40}
@@ -31,6 +32,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 alt="Snipster"
                 className="cursor-pointer"
               />
+            </a>
           </Link>
         </div>
         <UserMenu session={session} status={status} />
@@ -38,7 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex flex-grow flex-col-reverse lg:flex-row">
         <div className="flex lg:flex-col justify-center items-center bg-gray-800 p-4">
           <div className="flex lg:flex-col gap-4">
-            <Link href="#">
+            <Link href="/">
               <a className="btn btn-square active">
                 <HomeIcon className="h-6 w-6" />
               </a>

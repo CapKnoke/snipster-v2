@@ -8,6 +8,7 @@ export const snippetRouter = createRouter()
   .mutation('add', {
     input: z.object({
       title: z.string().min(1).max(32),
+      description: z.string().max(140),
       code: z.string().min(1),
       language: z.string(),
       public: z.boolean().default(true),
