@@ -5,10 +5,10 @@ import { prisma } from '../prisma';
 import { defaultSnippetSelect, previewSnippetSelect } from '@server/utils/selectors';
 
 export const snippetRouter = createRouter()
-  // create
   .mutation('add', {
     input: z.object({
       title: z.string().min(1).max(32),
+      description: z.string().max(140),
       code: z.string().min(1),
       language: z.string(),
       public: z.boolean().default(true),
@@ -21,7 +21,6 @@ export const snippetRouter = createRouter()
       return snippet;
     },
   })
-  // read
   .query('all', {
     async resolve() {
       /**

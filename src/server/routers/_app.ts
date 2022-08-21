@@ -1,14 +1,10 @@
-/**
- * This file contains the root router of your tRPC-backend
- */
 import { createRouter } from '../createRouter';
 import { snippetRouter } from './snippet';
+import { userRouter } from './user';
 import { z } from 'zod';
 import superjson from 'superjson';
 
 /**
- * Create your application's root router
- * If you want to use SSG, you need export this
  * @link https://trpc.io/docs/ssg
  * @link https://trpc.io/docs/router
  */
@@ -24,7 +20,6 @@ export const appRouter = createRouter()
    */
   // .formatError(({ shape, error }) => { })
   .query('hello', {
-    // using zod schema to validate and infer input values
     input: z
       .object({
         text: z.string().nullish(),
@@ -36,9 +31,7 @@ export const appRouter = createRouter()
       };
     },
   })
-  /**
-   * Merge `snippetRouter` under `snippet.`
-   */
-  .merge('snippet.', snippetRouter);
+  .merge('snippet.', snippetRouter)
+  .merge('user.', userRouter);
 
 export type AppRouter = typeof appRouter;

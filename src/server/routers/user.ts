@@ -7,10 +7,6 @@ import { previewUserSelect, defaultUserSelect } from '@server/utils/selectors';
 export const userRouter = createRouter()
   .query('all', {
     async resolve() {
-      /**
-       * For pagination you can have a look at this docs site
-       * @link https://trpc.io/docs/useInfiniteQuery
-       */
       return prisma.user.findMany({
         select: previewUserSelect,
       });
