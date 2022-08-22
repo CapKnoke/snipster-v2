@@ -1,4 +1,3 @@
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -42,17 +41,17 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
         <div className="flex sticky bottom-0 lg:flex-col justify-center items-center bg-gray-800 p-4 z-10">
           <div className="flex lg:flex-col gap-4">
             <Link href="/">
-              <a className="btn btn-square active">
+              <a className="btn btn-square">
                 <HomeIcon className="h-6 w-6" />
               </a>
             </Link>
             <Link href="/create">
-              <a className="btn btn-square active">
+              <a className={`btn btn-square${session ? "" : " btn-disabled"}`}>
                 <DocumentAddIcon className="h-6 w-6" />
               </a>
             </Link>
             <Link href="#">
-              <a className="btn btn-square active">
+              <a className={`btn btn-square${session ? "" : " btn-disabled"}`}>
                 <UserIcon className="h-6 w-6" />
               </a>
             </Link>
