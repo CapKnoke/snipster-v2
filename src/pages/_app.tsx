@@ -66,22 +66,9 @@ export default withTRPC<AppRouter>({
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
        queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
-      //  headers: () => {
-      //    if (ctx?.req) {
-      //      // on ssr, forward client's headers to the server
-      //      return {
-      //        ...ctx.req.headers,
-      //        'x-ssr': '1',
-      //      };
-      //    }
-      //    return {};
-      //  },
     };
   },
   ssr: true,
-  /**
-   * Set headers or status code when doing SSR
-   */
   responseMeta(opts) {
     const ctx = opts.ctx as SSRContext;
     if (ctx.req) {
@@ -91,13 +78,6 @@ export default withTRPC<AppRouter>({
         'x-ssr': '1',
       };
     }
-    // if (ctx.status) {
-    //   // If HTTP status set, propagate that
-    //   return {
-    //     status: ctx.status,
-    //   };
-    // }
-
     const error = opts.clientErrors[0];
     if (error) {
       // Propagate http first error from API calls

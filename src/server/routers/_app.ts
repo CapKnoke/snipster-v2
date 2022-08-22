@@ -10,12 +10,10 @@ import superjson from 'superjson';
  */
 export const appRouter = createRouter()
   /**
-   * Add data transformers
    * @link https://trpc.io/docs/data-transformers
    */
   .transformer(superjson)
   /**
-   * Optionally do custom error (type safe!) formatting
    * @link https://trpc.io/docs/error-formatting
    */
   // .formatError(({ shape, error }) => { })
@@ -25,9 +23,10 @@ export const appRouter = createRouter()
         text: z.string().nullish(),
       })
       .nullish(),
-    resolve({ input }) {
+    resolve({ input, ctx }) {
       return {
         greeting: `hello ${input?.text ?? 'world'}`,
+        user: ctx.user,
       };
     },
   })
