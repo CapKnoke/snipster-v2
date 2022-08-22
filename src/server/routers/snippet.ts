@@ -11,14 +11,20 @@ export const snippetRouter = createRouter()
       description: z.string().max(140),
       code: z.string().min(1),
       language: z.string(),
-      public: z.boolean().default(true),
+      public: z.boolean(),
     }),
-    async resolve({ input }) {
+    async resolve({ input, ctx }) {
       const snippet = await prisma.snippet.create({
-        data: { ...input, author: { connect: { id: '123' } } }, // TODO: get userId from request
+        data: { ...input, author: { connect: { id: ctx.userId } } },
         select: defaultSnippetSelect,
       });
-      return snippet;
+      if (!snippet || snippet.isDeleted) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: !ctx.userId ? `Invalid user ID` : 'Bad request',
+        });
+      }
+      return snippet.id;
     },
   })
   .query('all', {

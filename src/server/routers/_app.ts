@@ -23,10 +23,9 @@ export const appRouter = createRouter()
         text: z.string().nullish(),
       })
       .nullish(),
-    resolve({ input, ctx }) {
+    resolve({ input }) {
       return {
         greeting: `hello ${input?.text ?? 'world'}`,
-        user: ctx.user,
       };
     },
   })
