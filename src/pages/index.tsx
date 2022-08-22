@@ -1,11 +1,11 @@
 import { trpc } from '../utils/trpc';
 import type { Session } from 'next-auth';
-import { NextPageContext } from 'next';
+import { publicRuntimeConfig } from '@utils/publicRuntimeConfig';
 
 type HomeProps = {
   session?: Session;
-  name?: string
-}
+  name?: string;
+};
 
 export default function Home({ session }: HomeProps) {
   const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }]);
@@ -16,6 +16,7 @@ export default function Home({ session }: HomeProps) {
       </div>
     );
   }
+  console.dir({ user: welcomeQuery.data.user, enviroment: publicRuntimeConfig.NODE_ENV });
   return (
     <div className="text-center">
       <h1 className="text-2xl capitalize">{welcomeQuery.data.greeting}</h1>

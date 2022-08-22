@@ -14,7 +14,6 @@ export const snippetRouter = createRouter()
       public: z.boolean().default(true),
     }),
     async resolve({ input }) {
-      console.log
       const snippet = await prisma.snippet.create({
         data: { ...input, author: { connect: { id: '123' } } }, // TODO: get userId from request
         select: defaultSnippetSelect,
