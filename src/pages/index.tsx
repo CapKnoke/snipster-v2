@@ -1,11 +1,14 @@
 import { trpc } from '../utils/trpc';
-import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
+import { NextPageContext } from 'next';
 
-export default function Home() {
-  const { data: session, status } = useSession();
-  const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }], {
-    enabled: status !== 'loading',
-  });
+type HomeProps = {
+  session?: Session;
+  name?: string
+}
+
+export default function Home({ session }: HomeProps) {
+  const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }]);
   if (!welcomeQuery.data) {
     return (
       <div className="text-center">

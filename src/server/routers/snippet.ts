@@ -14,6 +14,7 @@ export const snippetRouter = createRouter()
       public: z.boolean().default(true),
     }),
     async resolve({ input }) {
+      console.log
       const snippet = await prisma.snippet.create({
         data: { ...input, author: { connect: { id: '123' } } }, // TODO: get userId from request
         select: defaultSnippetSelect,
@@ -24,7 +25,7 @@ export const snippetRouter = createRouter()
   .query('all', {
     async resolve() {
       /**
-       * For pagination you can have a look at this docs site
+       * pagination:
        * @link https://trpc.io/docs/useInfiniteQuery
        */
       return prisma.snippet.findMany({

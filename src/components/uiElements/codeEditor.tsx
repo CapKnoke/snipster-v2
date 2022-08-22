@@ -1,5 +1,5 @@
-import React, { Ref } from 'react';
-import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import React from 'react';
+import CodeMirror from '@uiw/react-codemirror';
 import { githubDark } from '@uiw/codemirror-theme-github';
 import { loadLanguage } from '@uiw/codemirror-extensions-langs';
 import { EditorView } from '@codemirror/view';
@@ -11,34 +11,32 @@ type CodeEditorProps = {
   editable?: boolean;
   placeholder?: string;
   code?: string;
+  onChange?(value: string): void;
 };
 
-const CodeEditor = React.forwardRef(
-  (
-    { language = 'javascript', editable, placeholder, code }: CodeEditorProps,
-    ref: Ref<ReactCodeMirrorRef>
-  ) => {
-    const extensions = [EditorView.lineWrapping] as Extension[];
-    const lang = loadLanguage(language);
-    if (lang !== null) {
-      extensions.push(lang);
-    }
-    return (
-      <CodeMirror
-        ref={ref}
-        value={code || ''}
-        placeholder={placeholder}
-        height="100%"
-        minHeight="20rem"
-        theme={githubDark}
-        extensions={extensions}
-        editable={editable}
-        className="flex-grow overflow-y-auto"
-      />
-    );
+export default function CodeEditor({
+  language = 'javascript',
+  editable,
+  placeholder,
+  code,
+  onChange,
+}: CodeEditorProps) {
+  const extensions = [EditorView.lineWrapping] as Extension[];
+  const lang = loadLanguage(language);
+  if (lang !== null) {
+    extensions.push(lang);
   }
-);
-
-CodeEditor.displayName = 'CodeEditor';
-
-export default CodeEditor;
+  return (
+    <CodeMirror
+      value={code || ''}
+      onChange={onChange}
+      placeholder={placeholder}
+      height="100%"
+      minHeight="20rem"
+      theme={githubDark}
+      extensions={extensions}
+      editable={editable}
+      className="flex-grow overflow-y-auto"
+    />
+  );
+}

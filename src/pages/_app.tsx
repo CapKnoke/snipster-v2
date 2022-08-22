@@ -1,30 +1,32 @@
 import '../styles/globals.css';
-import { SessionProvider } from 'next-auth/react';
+import { getSession, SessionProvider } from 'next-auth/react';
 import { httpBatchLink } from '@trpc/client/links/httpBatchLink';
 import { loggerLink } from '@trpc/client/links/loggerLink';
 import { withTRPC } from '@trpc/next';
 import superjson from 'superjson';
-import type { NextPage } from 'next';
-import type { AppProps } from 'next/app';
-import type { ReactElement, ReactNode } from 'react';
 import type { AppRouter } from '@server/routers/_app';
 import type { SSRContext } from '@utils/trpc';
 import MainLayout from '@components/layouts/mainLayout';
+import { AppType } from 'next/dist/shared/lib/utils';
 
-export type NextPageWithLayout = NextPage & {
-  getLayout?: (page: ReactElement) => ReactNode;
-};
 
-type AppPropsWithLayout = AppProps & {
-  Component: NextPageWithLayout;
-};
-
-function MyApp({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) {
-  const getLayout = Component.getLayout ?? ((page) => <MainLayout>{page}</MainLayout>);
-  const layout = getLayout(<Component {...pageProps} />);
-
-  return <SessionProvider session={session}>{layout}</SessionProvider>;
+const MyApp: AppType = ({ Component, pageProps }) => {
+  return (
+    <SessionProvider session={pageProps.session}>
+      <MainLayout session={pageProps.session}>
+        <Component {...pageProps} />
+      </MainLayout>
+    </SessionProvider>
+  );
 }
+
+MyApp.getInitialProps = async ({ ctx }) => {
+  return {
+    pageProps: {
+      session: await getSession(ctx),
+    },
+  };
+};
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') {
@@ -41,13 +43,12 @@ function getBaseUrl() {
 }
 
 export default withTRPC<AppRouter>({
-  config() {
+  config({ ctx }) {
     return {
       /**
        * @link https://trpc.io/docs/links
        */
       links: [
-        // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
             process.env.NODE_ENV === 'development' ||
@@ -64,7 +65,17 @@ export default withTRPC<AppRouter>({
       /**
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
-      // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+       queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      //  headers: () => {
+      //    if (ctx?.req) {
+      //      // on ssr, forward client's headers to the server
+      //      return {
+      //        ...ctx.req.headers,
+      //        'x-ssr': '1',
+      //      };
+      //    }
+      //    return {};
+      //  },
     };
   },
   ssr: true,
@@ -73,13 +84,19 @@ export default withTRPC<AppRouter>({
    */
   responseMeta(opts) {
     const ctx = opts.ctx as SSRContext;
-
-    if (ctx.status) {
-      // If HTTP status set, propagate that
+    if (ctx.req) {
+      // on ssr, forward client's headers to the server
       return {
-        status: ctx.status,
+        ...ctx.req.headers,
+        'x-ssr': '1',
       };
     }
+    // if (ctx.status) {
+    //   // If HTTP status set, propagate that
+    //   return {
+    //     status: ctx.status,
+    //   };
+    // }
 
     const error = opts.clientErrors[0];
     if (error) {
