@@ -31,9 +31,9 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -42,11 +42,12 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  role          Role      @default(USER)
+  sessions      Session[]
+  accounts      Account[]
 
   followers     User[]     @relation("followers")
   following     User[]     @relation("followers")
-  accounts      Account[]
-  sessions      Session[]
   snippets      Snippet[]
   votes         Vote[]
   favorites     Favorite[]
@@ -74,6 +75,7 @@ model Snippet {
   votes     Vote[]
   favorites Favorite[]
   refactors Snippet[]  @relation("refactor")
+  comments  Comment[]
   events    Action[]
 
   createdAt DateTime @default(now())
@@ -81,20 +83,20 @@ model Snippet {
 
 model Vote {
   id        String  @id @default(cuid())
-  snippet   Snippet @relation(fields: [snippetId], references: [id])
-  snippetId String
   user      User    @relation(fields: [userId], references: [id])
   userId    String
+  snippet   Snippet @relation(fields: [snippetId], references: [id])
+  snippetId String
 
   createdAt DateTime @default(now())
 }
 
 model Favorite {
   id        String  @id @default(cuid())
-  snippet   Snippet @relation(fields: [snippetId], references: [id])
-  snippetId String
   user      User    @relation(fields: [userId], references: [id])
   userId    String
+  snippet   Snippet @relation(fields: [snippetId], references: [id])
+  snippetId String
 
   createdAt DateTime @default(now())
 }
@@ -104,6 +106,8 @@ model Comment {
   text      String
   author    User     @relation("comment", fields: [userId], references: [id])
   authorId  String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id])
+  snippetId String
   replyTo   Comment? @relation("reply", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replyToId String?
 
@@ -116,9 +120,10 @@ model Comment {
 }
 
 model Action {
-  id     String @id @default(cuid())
-  user   User   @relation("action", fields: [userId], references: [id])
-  userId String
+  id         String     @id @default(cuid())
+  user       User       @relation("action", fields: [userId], references: [id])
+  userId     String
+  actionType ActionType
 
   targetUser      User?    @relation(fields: [targetUserId], references: [id])
   targetUserId    String?
@@ -130,12 +135,17 @@ model Action {
   createdAt DateTime @default(now())
 }
 
+enum Role {
+  ADMIN
+  USER
+}
+
 enum ActionType {
   CREATE_SNIPPET
   REFACTOR_SNIPPET
   VOTE_SNIPPET
   FAVORITE_SNIPPET
-  COMMENT_SNIPPET
+  CREATE_COMMENT
   REPLY_COMMENT
   LIKE_COMMENT
   FOLLOW_USER
