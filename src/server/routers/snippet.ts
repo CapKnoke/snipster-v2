@@ -1,18 +1,25 @@
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { createRouter } from '../createRouter';
 import { prisma } from '../prisma';
-import { defaultSnippetSelect, favoriteSnippetSelect, previewSnippetSelect, voteSnippetSelect } from '@server/utils/prismaSelectors';
+import {
+  defaultSnippetSelect,
+  favoriteSnippetSelect,
+  idSnippetSelect,
+  previewSnippetSelect,
+  voteSnippetSelect,
+} from '@server/utils/prismaSelectors';
+import {
+  getCreateSnippetData,
+  getFavoriteSnippetData,
+  getUnfavoriteSnippetData,
+  getUnvoteSnippetData,
+  getVoteSnippetData,
+} from '@server/utils/snippetHelpers';
+import { createSnippetInput, idInput } from '@server/utils/inputSchemas';
 
 export const snippetRouter = createRouter()
   .mutation('add', {
-    input: z.object({
-      title: z.string().min(1).max(32),
-      description: z.string().max(140),
-      code: z.string().min(1),
-      language: z.string(),
-      public: z.boolean(),
-    }),
+    input: createSnippetInput,
     async resolve({ input, ctx }) {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -21,17 +28,8 @@ export const snippetRouter = createRouter()
         });
       }
       const snippet = await prisma.snippet.create({
-        data: {
-          ...input,
-          author: { connect: { id: ctx.userId } },
-          events: {
-            create: {
-              user: { connect: { id: ctx.userId } },
-              actionType: 'CREATE_SNIPPET',
-            },
-          },
-        },
-        select: { id: true },
+        data: getCreateSnippetData(input, ctx),
+        select: idSnippetSelect,
       });
       if (!snippet) {
         throw new TRPCError({
@@ -43,9 +41,7 @@ export const snippetRouter = createRouter()
     },
   })
   .mutation('vote', {
-    input: z.object({
-      id: z.string(),
-    }),
+    input: idInput,
     async resolve({ input, ctx }) {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -55,34 +51,13 @@ export const snippetRouter = createRouter()
       }
       const snippet = await prisma.snippet.update({
         where: { ...input },
-        data: {
-          votes: {
-            create: {
-              user: { connect: { id: ctx.userId } },
-            },
-          },
-          events: {
-            create: {
-              user: { connect: { id: ctx.userId } },
-              actionType: 'VOTE_SNIPPET',
-            },
-          },
-        },
+        data: getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
-      if (snippet.votes.some(({userId}) => userId === ctx.userId)) {
+      if (snippet.votes.some(({ userId }) => userId === ctx.userId)) {
         await prisma.snippet.update({
           where: { ...input },
-          data: {
-            votes: {
-              deleteMany: [{ userId: ctx.userId }],
-            },
-            events: {
-              deleteMany: [{
-                AND: [{ userId: ctx.userId }, { actionType: 'VOTE_SNIPPET' }]
-              }],
-            },
-          },
+          data: getUnvoteSnippetData(ctx),
           select: voteSnippetSelect,
         });
       }
@@ -90,9 +65,7 @@ export const snippetRouter = createRouter()
     },
   })
   .mutation('favorite', {
-    input: z.object({
-      id: z.string(),
-    }),
+    input: idInput,
     async resolve({ input, ctx }) {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -102,36 +75,16 @@ export const snippetRouter = createRouter()
       }
       const snippet = await prisma.snippet.update({
         where: { ...input },
-        data: {
-          favorites: {
-            create: {
-              user: { connect: { id: ctx.userId } },
-            },
-          },
-          events: {
-            create: {
-              user: { connect: { id: ctx.userId } },
-              actionType: 'FAVORITE_SNIPPET',
-            },
-          },
-        },
+        data: getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
-      if (snippet.favorites.some(({userId}) => userId === ctx.userId)) {
-        await prisma.snippet.update({
+      if (snippet.favorites.some(({ userId }) => userId === ctx.userId)) {
+        const unfavoritedSnippet = await prisma.snippet.update({
           where: { ...input },
-          data: {
-            favorites: {
-              deleteMany: [{ userId: ctx.userId }],
-            },
-            events: {
-              deleteMany: [{
-                AND: [{ userId: ctx.userId }, { actionType: 'FAVORITE_SNIPPET' }]
-              }],
-            },
-          },
+          data: getUnfavoriteSnippetData(ctx),
           select: favoriteSnippetSelect,
         });
+        return unfavoritedSnippet;
       }
       return snippet;
     },
@@ -151,9 +104,7 @@ export const snippetRouter = createRouter()
     },
   })
   .query('byId', {
-    input: z.object({
-      id: z.string(),
-    }),
+    input: idInput,
     async resolve({ input, ctx }) {
       const { id } = input;
       const snippet = await prisma.snippet.findUnique({
@@ -170,17 +121,19 @@ export const snippetRouter = createRouter()
     },
   })
   .mutation('delete', {
-    input: z.object({
-      id: z.string(),
-    }),
+    input: idInput,
     async resolve({ input, ctx }) {
       const { id } = input;
-      await prisma.snippet.update({
-        where: { id },
+      const deleted = await prisma.snippet.updateMany({
+        where: { AND: [{ id }, { authorId: ctx.userId }] },
         data: { isDeleted: true },
       });
-      return {
-        id,
-      };
+      if (deleted.count === 0) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You don't have permission to delete snippet with id '${id}'`,
+        });
+      }
+      return { id };
     },
   });
