@@ -17,6 +17,34 @@ export const previewSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
   public: true,
 });
 
+export const voteSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
+  id: true,
+  votes: {
+    select: {
+      userId: true
+    }
+  },
+  _count: {
+    select: {
+      votes: true,
+    }
+  }
+});
+
+export const favoriteSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
+  id: true,
+  favorites: {
+    select: {
+      userId: true
+    }
+  },
+  _count: {
+    select: {
+      favorites: true,
+    }
+  }
+});
+
 export const defaultSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
   id: true,
   title: true,
