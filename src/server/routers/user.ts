@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createRouter } from '../createRouter';
 import { prisma } from '../prisma';
-import { previewUserSelect, defaultUserSelect } from '@server/utils/selectors';
+import { previewUserSelect, defaultUserSelect } from '@server/utils/prismaSelectors';
 
 export const userRouter = createRouter()
   .query('all', {

@@ -89,6 +89,8 @@ model Vote {
   snippetId String
 
   createdAt DateTime @default(now())
+  
+  @@unique([userId, snippetId])
 }
 
 model Favorite {
@@ -99,6 +101,8 @@ model Favorite {
   snippetId String
 
   createdAt DateTime @default(now())
+  
+  @@unique([userId, snippetId])
 }
 
 model Comment {
@@ -133,6 +137,10 @@ model Action {
   targetCommentId String?
 
   createdAt DateTime @default(now())
+
+  @@unique([userId, targetSnippetId, actionType])
+  @@unique([userId, targetUserId, actionType])
+  @@unique([userId, targetCommentId, actionType])
 }
 
 enum Role {
