@@ -1,8 +1,13 @@
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { createRouter } from '../createRouter';
 import { prisma } from '../prisma';
-import { previewUserSelect, defaultUserSelect } from '@server/utils/prismaSelectors';
+import {
+  previewUserSelect,
+  defaultUserSelect,
+  followUserSelect,
+} from '@server/utils/prismaSelectors';
+import { editUserInput, idInput } from '@server/utils/inputSchemas';
+import { getFollowUserData, getUnfollowUserData } from '@server/utils/userHelpers';
 
 export const userRouter = createRouter()
   .query('all', {
@@ -13,9 +18,7 @@ export const userRouter = createRouter()
     },
   })
   .query('byId', {
-    input: z.object({
-      id: z.string(),
-    }),
+    input: idInput,
     async resolve({ input }) {
       const { id } = input;
       const user = await prisma.user.findUnique({
@@ -32,12 +35,7 @@ export const userRouter = createRouter()
     },
   })
   .mutation('edit', {
-    input: z.object({
-      id: z.string().uuid(),
-      data: z.object({
-        bio: z.string().min(1).max(140).optional(),
-      }),
-    }),
+    input: editUserInput,
     async resolve({ input }) {
       const { id, data } = input;
       const user = await prisma.user.update({
@@ -45,6 +43,31 @@ export const userRouter = createRouter()
         data,
         select: defaultUserSelect,
       });
+      return user;
+    },
+  })
+  .mutation('follow', {
+    input: idInput,
+    async resolve({ input, ctx }) {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to follow a user',
+        });
+      }
+      const user = await prisma.user.update({
+        where: { ...input },
+        data: getFollowUserData(ctx),
+        select: followUserSelect,
+      });
+      if (user.followers.some(({ id }) => id === ctx.userId)) {
+        const unfollowedUser = await prisma.user.update({
+          where: { ...input },
+          data: getUnfollowUserData(ctx),
+          select: followUserSelect,
+        });
+        return unfollowedUser;
+      }
       return user;
     },
   });

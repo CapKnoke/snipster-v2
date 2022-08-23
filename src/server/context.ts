@@ -15,15 +15,21 @@ export async function createContext(opts?: trpcNext.CreateNextContextOptions) {
       const session = await prisma.session.findUnique({
         where: { sessionToken: token },
         select: {
-          userId: true,
+          user: {
+            select: {
+              id: true,
+              role: true
+            }
+          }
         },
       });
-      if (session) return session.userId;
+      if (session) return session.user;
     }
   }
-  const userId = await getUserFromCookies();
+  const user = await getUserFromCookies();
   return {
-    userId,
+    userId: user?.id,
+    role: user?.role,
   };
 }
 export type Context = trpc.inferAsyncReturnType<typeof createContext>;
