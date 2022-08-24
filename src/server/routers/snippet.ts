@@ -2,12 +2,14 @@ import { TRPCError } from '@trpc/server';
 import { createRouter } from '../createRouter';
 import { prisma } from '../prisma';
 import {
+  commentSnippetSelect,
   defaultSnippetSelect,
+  eventSnippetSelect,
   favoriteSnippetSelect,
   idSnippetSelect,
   previewSnippetSelect,
   voteSnippetSelect,
-} from '@server/utils/selectors';
+} from '@server/utils/snippetSelectors';
 import {
   getCreateSnippetData,
   getFavoriteSnippetData,
@@ -18,6 +20,83 @@ import {
 import { createSnippetInput, idInput } from '@server/utils/schemas';
 
 export const snippetRouter = createRouter()
+  // QUERIES
+  .query('all', {
+    async resolve() {
+      /**
+       * pagination:
+       * @link https://trpc.io/docs/useInfiniteQuery
+       */
+      return prisma.snippet.findMany({
+        where: { AND: [{ deleted: false }, { public: true }] },
+        select: previewSnippetSelect,
+      });
+    },
+  })
+  .query('byId', {
+    input: idInput,
+    async resolve({ input, ctx }) {
+      const { id } = input;
+      const snippet = await prisma.snippet.findUnique({
+        where: { id },
+        select: defaultSnippetSelect,
+      });
+      if (
+        !snippet ||
+        snippet.deleted ||
+        (snippet.author.id !== ctx.userId && snippet.public === false)
+      ) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `No snippet with id '${id}'`,
+        });
+      }
+      return snippet;
+    },
+  })
+  .query('eventsById', {
+    input: idInput,
+    async resolve({ input, ctx }) {
+      const { id } = input;
+      const snippet = await prisma.snippet.findUnique({
+        where: { id },
+        select: eventSnippetSelect,
+      });
+      if (
+        !snippet ||
+        snippet.deleted ||
+        (snippet.authorId !== ctx.userId && snippet.public === false)
+      ) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `No snippet with id '${id}'`,
+        });
+      }
+      return snippet.events;
+    },
+  })
+  .query('commentsById', {
+    input: idInput,
+    async resolve({ input, ctx }) {
+      const { id } = input;
+      const snippet = await prisma.snippet.findUnique({
+        where: { id },
+        select: commentSnippetSelect,
+      });
+      if (
+        !snippet ||
+        snippet.deleted ||
+        (snippet.authorId !== ctx.userId && snippet.public === false)
+      ) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `No snippet with id '${id}'`,
+        });
+      }
+      return snippet.comments;
+    }
+  })
+  // MUTATIONS
   .mutation('add', {
     input: createSnippetInput,
     async resolve({ input, ctx }) {
@@ -89,51 +168,16 @@ export const snippetRouter = createRouter()
       return snippet;
     },
   })
-  .query('all', {
-    async resolve() {
-      /**
-       * pagination:
-       * @link https://trpc.io/docs/useInfiniteQuery
-       */
-      return prisma.snippet.findMany({
-        where: {
-          AND: [{ isDeleted: false }, { public: true }],
-        },
-        select: previewSnippetSelect,
-      });
-    },
-  })
-  .query('byId', {
-    input: idInput,
-    async resolve({ input, ctx }) {
-      const { id } = input;
-      const snippet = await prisma.snippet.findUnique({
-        where: { id },
-        select: defaultSnippetSelect,
-      });
-      if (!snippet || snippet.isDeleted) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No snippet with id '${id}'`,
-        });
-      }
-      return snippet;
-    },
-  })
   .mutation('delete', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
-      const deleted = await prisma.snippet.updateMany({
-        where: { AND: [{ id }, { authorId: ctx.userId }] },
-        data: { isDeleted: true },
-      });
-      if (deleted.count === 0) {
+      if (!ctx.userId) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
-          message: `You don't have permission to delete snippet with id '${id}'`,
+          message: 'You must be logged in to delete a snippet',
         });
       }
+      const { id } = input;
       return { id };
     },
   });
