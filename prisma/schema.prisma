@@ -53,7 +53,7 @@ model User {
   votes         Vote[]
   favorites     Favorite[]
   comments      Comment[]  @relation("comment")
-  likedComments Comment[]
+  likedComments Like[]
   actions       Action[]   @relation("action")
   events        Action[]
 
@@ -90,7 +90,7 @@ model Vote {
   snippetId String
 
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, snippetId])
 }
 
@@ -102,7 +102,7 @@ model Favorite {
   snippetId String
 
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, snippetId])
 }
 
@@ -116,12 +116,24 @@ model Comment {
   replyTo   Comment? @relation("reply", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replyToId String?
 
-  likes   User[]
+  likes   Like[]
   replies Comment[] @relation("reply")
   events  Action[]
 
   createdAt DateTime @default(now())
   userId    String
+}
+
+model Like {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment @relation(fields: [commentId], references: [id])
+  commentId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
 }
 
 model Action {
@@ -139,9 +151,7 @@ model Action {
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, targetSnippetId, actionType])
-  @@unique([userId, targetUserId, actionType])
-  @@unique([userId, targetCommentId, actionType])
+  @@unique([userId, targetUserId])
 }
 
 enum Role {

@@ -15,5 +15,10 @@ export default NextAuth({
       scope: 'read:user',
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async session({ session, user: { id, name, image, role } }) {
+      session.user = { id, name, image, role };
+      return session;
+    },
+  },
 });

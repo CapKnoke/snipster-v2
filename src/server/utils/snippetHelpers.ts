@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Context } from '@server/context';
-import { CreateSnippetInput } from './inputSchemas';
+import { CreateSnippetInput } from './schemas';
 
 export const getCreateSnippetData = (input: CreateSnippetInput, ctx: Context) => (
   Prisma.validator<Prisma.SnippetCreateInput>()({
