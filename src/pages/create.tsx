@@ -1,4 +1,4 @@
-import CreateSnippetForm from '@features/createSnippetForm';
+import CreateSnippetForm from '@components/forms/createSnippetForm';
 
 export default function Create() {
   return <CreateSnippetForm />;

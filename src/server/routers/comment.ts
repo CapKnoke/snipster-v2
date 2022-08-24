@@ -7,8 +7,8 @@ import {
   getLikeCommentData,
   getReplyCommentData,
   getUnlikeCommentData,
-} from '@server/utils/commentHelpers';
-import { likeCommentSelect, replyCommentSelect } from '@server/utils/commentSelectors';
+} from '@server/utils/helpers';
+import { likeCommentSelect, replyCommentSelect } from '@server/utils/selectors';
 
 export const commentRouter = createRouter()
   .mutation('add', {
@@ -30,7 +30,7 @@ export const commentRouter = createRouter()
           message: 'Failed to create comment',
         });
       }
-      return createdComment.id;
+      return { id: createdComment.id };
     },
   })
   .mutation('reply', {
@@ -53,7 +53,7 @@ export const commentRouter = createRouter()
           message: 'Failed to create reply',
         });
       }
-      return reply;
+      return { comment: reply };
     },
   })
   .mutation('like', {
@@ -76,9 +76,9 @@ export const commentRouter = createRouter()
           data: getUnlikeCommentData(ctx),
           select: likeCommentSelect,
         });
-        return unlikedComment;
+        return { comment: unlikedComment };
       }
-      return likedComment;
+      return { comment: likedComment };
     },
   })
   .mutation('delete', {
@@ -99,6 +99,6 @@ export const commentRouter = createRouter()
           message: `You don't have permission to delete comment with id '${input.id}'`,
         });
       }
-      return input.id;
+      return { id: input.id };
     },
   });

@@ -10,17 +10,18 @@ import {
   activityUserSelect,
   eventsUserSelect,
   feedUserSelect,
-} from '@server/utils/userSelectors';
+} from '@server/utils/selectors';
 import { editUserInput, idInput } from '@server/utils/schemas';
-import { getFollowUserData, getUnfollowUserData } from '@server/utils/userHelpers';
+import { getFollowUserData, getUnfollowUserData } from '@server/utils/helpers';
 
 export const userRouter = createRouter()
   // QUERIES
   .query('all', {
     async resolve() {
-      return prisma.user.findMany({
+      const users = prisma.user.findMany({
         select: previewUserSelect,
       });
+      return { users }
     },
   })
   .query('byId', {
@@ -36,7 +37,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return userById;
+      return { user: userById };
     },
   })
   .query('snippetsById', {
@@ -53,7 +54,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return userWithSnippets.snippets;
+      return { snippets: userWithSnippets.snippets };
     },
   })
   .query('eventsById', {
@@ -69,7 +70,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return userWithEvents.events;
+      return { events: userWithEvents.events };
     },
   })
   .query('activityById', {
@@ -85,7 +86,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return userWithActivity.actions;
+      return { actions: userWithActivity.actions };
     },
   })
   .query('feedById', {
@@ -101,9 +102,11 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return userWithFeed.following
-        .flatMap(({ actions }) => actions)
-        .sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate());
+      return {
+        feed: userWithFeed.following
+          .flatMap(({ actions }) => actions)
+          .sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate())
+      };
     },
   })
   // MUTATIONS
@@ -115,7 +118,7 @@ export const userRouter = createRouter()
         data: { ...input.data },
         select: defaultUserSelect,
       });
-      return updatedUser;
+      return { user: updatedUser };
     },
   })
   .mutation('follow', {
@@ -138,8 +141,8 @@ export const userRouter = createRouter()
           data: getUnfollowUserData(ctx),
           select: followUserSelect,
         });
-        return unfollowedUser;
+        return { user: unfollowedUser };
       }
-      return followedUser;
+      return { user: followedUser };
     },
   });

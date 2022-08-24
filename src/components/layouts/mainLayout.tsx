@@ -21,7 +21,7 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
         <meta name="description" content="The ultimate snippet sharing platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex justify-between items-center sticky top-0 z-10 bg-gray-900 py-6 px-4 bg-opacity-40 backdrop-blur-lg drop-shadow-md">
+      <div className="flex justify-between items-center sticky top-0 z-20 bg-gray-900 py-4 px-4 bg-opacity-40 backdrop-blur-lg drop-shadow-md">
         <div className="flex justify-start lg:w-0 lg:flex-1">
           <Link href="/">
             <a>
@@ -38,7 +38,7 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
         <UserMenu session={session} />
       </div>
       <div className="flex flex-grow flex-col-reverse lg:flex-row">
-        <div className="flex sticky bottom-0 lg:flex-col justify-center items-center bg-gray-800 p-4 z-10">
+        <div className="flex sticky bottom-0 lg:fixed lg:flex-col lg:h-[calc(100vh-5rem)] justify-center items-center bg-gray-800 p-4 z-10">
           <div className="flex lg:flex-col gap-4">
             <Link href="/">
               <a className="btn btn-square">
@@ -57,7 +57,9 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
             </Link>
           </div>
         </div>
-        <main className="flex flex-col flex-grow max-w-screen-2xl 2xl:mx-auto p-4">{children}</main>
+        <div className="flex flex-grow 2xl:mx-auto max-w-screen-2xl">
+          <main className="flex flex-col flex-grow p-4 lg:ml-20">{children}</main>
+        </div>
       </div>
       {process.env.NODE_ENV !== 'production' && <ReactQueryDevtools initialIsOpen={false} />}
     </div>

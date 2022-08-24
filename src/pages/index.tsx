@@ -1,4 +1,4 @@
-import { trpc } from '../utils/trpc';
+import { trpc } from '@utils/trpc';
 import type { Session } from 'next-auth';
 
 type HomeProps = {
