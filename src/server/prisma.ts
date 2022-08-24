@@ -9,7 +9,7 @@ const prismaGlobal = global as typeof global & {
   prisma?: PrismaClient;
 };
 
-export const prisma: PrismaClient =
+const prisma: PrismaClient =
   prismaGlobal.prisma ||
   new PrismaClient({
     log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
@@ -18,3 +18,37 @@ export const prisma: PrismaClient =
 if (process.env.NODE_ENV !== 'production') {
   prismaGlobal.prisma = prisma;
 }
+
+prisma.$use(async (params, next) => {
+  if (params.model == 'Snippet') {
+    if (params.action == 'delete') {
+      params.action = 'update';
+      params.args['data'] = { deleted: true };
+    }
+    if (params.action == 'deleteMany') {
+      params.action = 'updateMany';
+      if (params.args.data != undefined) {
+        params.args.data['deleted'] = true;
+      } else {
+        params.args['data'] = { deleted: true };
+      }
+    }
+  }
+  if (params.model == 'Comment') {
+    if (params.action == 'delete') {
+      params.action = 'update';
+      params.args['data'] = { deleted: true };
+    }
+    if (params.action == 'deleteMany') {
+      params.action = 'updateMany';
+      if (params.args.data != undefined) {
+        params.args.data['deleted'] = true;
+      } else {
+        params.args['data'] = { deleted: true };
+      }
+    }
+  }
+  return next(params);
+});
+
+export { prisma };

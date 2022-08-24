@@ -1,7 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter } from '../createRouter';
-import { prisma } from '../prisma';
-import { voteSnippetSelect } from '@server/utils/snippetSelectors';
+import { createRouter } from '@server/createRouter';
+import { prisma } from '@server/prisma';
 import { createCommentInput, idInput, replyCommentInput } from '@server/utils/schemas';
 import {
   getCreateCommentData,
@@ -11,7 +10,7 @@ import {
 } from '@server/utils/commentHelpers';
 import { likeCommentSelect, replyCommentSelect } from '@server/utils/commentSelectors';
 
-export const snippetRouter = createRouter()
+export const commentRouter = createRouter()
   .mutation('add', {
     input: createCommentInput,
     async resolve({ input, ctx }) {
@@ -37,7 +36,6 @@ export const snippetRouter = createRouter()
   .mutation('reply', {
     input: replyCommentInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
       if (!ctx.userId) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -45,7 +43,7 @@ export const snippetRouter = createRouter()
         });
       }
       const reply = await prisma.comment.update({
-        where: { id },
+        where: { id: input.id },
         data: getReplyCommentData(input, ctx),
         select: replyCommentSelect,
       });
@@ -64,22 +62,23 @@ export const snippetRouter = createRouter()
       if (!ctx.userId) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to upvote a snippet',
+          message: 'You must be logged in to like a comment',
         });
       }
-      const comment = await prisma.comment.update({
+      const likedComment = await prisma.comment.update({
         where: { ...input },
         data: getLikeCommentData(ctx),
         select: likeCommentSelect,
       });
-      if (comment.likes.some(({ userId }) => userId === ctx.userId)) {
-        await prisma.snippet.update({
+      if (likedComment.likes.some(({ userId }) => userId === ctx.userId)) {
+        const unlikedComment = await prisma.comment.update({
           where: { ...input },
           data: getUnlikeCommentData(ctx),
-          select: voteSnippetSelect,
+          select: likeCommentSelect,
         });
+        return unlikedComment;
       }
-      return comment;
+      return likedComment;
     },
   })
   .mutation('delete', {
@@ -88,9 +87,18 @@ export const snippetRouter = createRouter()
       if (!ctx.userId) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to delete a snippet',
+          message: 'You must be logged in to delete a comment',
         });
       }
-      const { id } = input;
+      const deleted = await prisma.comment.deleteMany({
+        where: { AND: [{ id: input.id }, { authorId: ctx.userId }] },
+      });
+      if (deleted.count === 0) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You don't have permission to delete comment with id '${input.id}'`,
+        });
+      }
+      return input.id;
     },
   });

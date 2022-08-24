@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter } from '../createRouter';
-import { prisma } from '../prisma';
+import { createRouter } from '@server/createRouter';
+import { prisma } from '@server/prisma';
 import {
   previewUserSelect,
   defaultUserSelect,
