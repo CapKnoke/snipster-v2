@@ -1,21 +1,27 @@
 import { z } from 'zod';
 
 export const createSnippetInput = z.object({
-  title: z.string().min(1).max(32),
-  description: z.string().max(140),
-  code: z.string().min(1),
-  language: z.string(),
-  public: z.boolean(),
+  data: z.object({
+    title: z.string().min(1).max(64),
+    description: z.string().max(140).optional(),
+    code: z.string().min(1),
+    language: z.string(),
+    public: z.boolean(),
+  })
 });
 
 export const createCommentInput = z.object({
-  snippetId: z.string().cuid(),
-  text: z.string().min(1),
+  data: z.object({
+    snippetId: z.string().cuid(),
+    text: z.string().min(1),
+  })
 });
 
 export const replyCommentInput = z.object({
   id: z.string().cuid(),
-  text: z.string().min(1),
+  data: z.object({
+    text: z.string().min(1),
+  })
 });
 
 export const editUserInput = z.object({

@@ -66,7 +66,7 @@ model Snippet {
   id          String   @id @default(cuid())
   title       String
   description String?
-  code        String
+  code        String   @db.Text
   language    String
   author      User     @relation(fields: [authorId], references: [id])
   authorId    String

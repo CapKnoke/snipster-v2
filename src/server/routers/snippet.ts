@@ -9,14 +9,14 @@ import {
   idSnippetSelect,
   previewSnippetSelect,
   voteSnippetSelect,
-} from '@server/utils/snippetSelectors';
+} from '@server/utils/selectors';
 import {
   getCreateSnippetData,
   getFavoriteSnippetData,
   getUnfavoriteSnippetData,
   getUnvoteSnippetData,
   getVoteSnippetData,
-} from '@server/utils/snippetHelpers';
+} from '@server/utils/helpers';
 import { createSnippetInput, idInput } from '@server/utils/schemas';
 
 export const snippetRouter = createRouter()
@@ -50,7 +50,7 @@ export const snippetRouter = createRouter()
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippetById;
+      return { snippet: snippetById };
     },
   })
   .query('eventsById', {
@@ -70,7 +70,7 @@ export const snippetRouter = createRouter()
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippetWithEvents.events;
+      return { events: snippetWithEvents.events };
     },
   })
   .query('commentsById', {
@@ -90,7 +90,7 @@ export const snippetRouter = createRouter()
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippetWithComments.comments;
+      return { comments: snippetWithComments.comments };
     },
   })
   // MUTATIONS
@@ -113,7 +113,7 @@ export const snippetRouter = createRouter()
           message: 'Failed to create snippet',
         });
       }
-      return createdSnippet.id;
+      return { id: createdSnippet.id };
     },
   })
   .mutation('vote', {
@@ -136,9 +136,9 @@ export const snippetRouter = createRouter()
           data: getUnvoteSnippetData(ctx),
           select: voteSnippetSelect,
         });
-        return unvotedSnippet;
+        return { snippet: unvotedSnippet };
       }
-      return votedSnippet;
+      return { snippet: votedSnippet };
     },
   })
   .mutation('favorite', {
@@ -161,9 +161,9 @@ export const snippetRouter = createRouter()
           data: getUnfavoriteSnippetData(ctx),
           select: favoriteSnippetSelect,
         });
-        return unfavoritedSnippet;
+        return { snippet: unfavoritedSnippet };
       }
-      return favoritedSnippet;
+      return { snippet: favoritedSnippet };
     },
   })
   .mutation('delete', {
@@ -184,6 +184,6 @@ export const snippetRouter = createRouter()
           message: `You don't have permission to delete snippet with id '${input.id}'`,
         });
       }
-      return input.id;
+      return { id: input.id };
     },
   });
