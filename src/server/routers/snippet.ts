@@ -7,7 +7,7 @@ import {
   idSnippetSelect,
   previewSnippetSelect,
   voteSnippetSelect,
-} from '@server/utils/prismaSelectors';
+} from '@server/utils/selectors';
 import {
   getCreateSnippetData,
   getFavoriteSnippetData,
@@ -15,7 +15,7 @@ import {
   getUnvoteSnippetData,
   getVoteSnippetData,
 } from '@server/utils/snippetHelpers';
-import { createSnippetInput, idInput } from '@server/utils/inputSchemas';
+import { createSnippetInput, idInput } from '@server/utils/schemas';
 
 export const snippetRouter = createRouter()
   .mutation('add', {

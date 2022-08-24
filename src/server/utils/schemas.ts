@@ -20,4 +20,5 @@ export const idInput = z.object({
 });
 
 export type CreateSnippetInput = typeof createSnippetInput._type;
+export type EditUserInput = typeof editUserInput._type;
 export type IdInput = typeof idInput._type;

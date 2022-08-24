@@ -5,8 +5,8 @@ import {
   previewUserSelect,
   defaultUserSelect,
   followUserSelect,
-} from '@server/utils/prismaSelectors';
-import { editUserInput, idInput } from '@server/utils/inputSchemas';
+} from '@server/utils/selectors';
+import { editUserInput, idInput } from '@server/utils/schemas';
 import { getFollowUserData, getUnfollowUserData } from '@server/utils/userHelpers';
 
 export const userRouter = createRouter()
