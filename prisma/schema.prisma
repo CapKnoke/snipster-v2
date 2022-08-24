@@ -47,15 +47,17 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  followers     User[]     @relation("followers")
-  following     User[]     @relation("followers")
-  snippets      Snippet[]
-  votes         Vote[]
-  favorites     Favorite[]
-  comments      Comment[]  @relation("comment")
-  likedComments Like[]
-  actions       Action[]   @relation("action")
-  events        Action[]
+  followers User[]     @relation("followers")
+  following User[]     @relation("followers")
+  snippets  Snippet[]
+  votes     Vote[]
+  favorites Favorite[]
+  comments  Comment[]
+  likes     Like[]
+  actions   Action[]   @relation("action")
+  events    Action[]
+
+  createdAt DateTime @default(now())
 
   @@unique([id, name])
 }
@@ -66,12 +68,12 @@ model Snippet {
   description String?
   code        String
   language    String
-  public      Boolean
-  isDeleted   Boolean  @default(false)
   author      User     @relation(fields: [authorId], references: [id])
   authorId    String
   basedOn     Snippet? @relation("refactor", fields: [basedOnId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   basedOnId   String?
+  public      Boolean
+  deleted     Boolean  @default(false)
 
   votes     Vote[]
   favorites Favorite[]
@@ -109,27 +111,27 @@ model Favorite {
 model Comment {
   id        String   @id @default(cuid())
   text      String
-  author    User     @relation("comment", fields: [userId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
   authorId  String
-  snippet   Snippet  @relation(fields: [snippetId], references: [id])
-  snippetId String
+  snippet   Snippet? @relation(fields: [snippetId], references: [id])
+  snippetId String?
   replyTo   Comment? @relation("reply", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replyToId String?
+  deleted   Boolean  @default(false)
 
   likes   Like[]
   replies Comment[] @relation("reply")
   events  Action[]
 
   createdAt DateTime @default(now())
-  userId    String
 }
 
 model Like {
-  id        String  @id @default(cuid())
-  user      User    @relation(fields: [userId], references: [id])
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  comment   Comment @relation(fields: [commentId], references: [id])
-  commentId String
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
 
   createdAt DateTime @default(now())
 
@@ -164,7 +166,7 @@ enum ActionType {
   REFACTOR_SNIPPET
   VOTE_SNIPPET
   FAVORITE_SNIPPET
-  CREATE_COMMENT
+  COMMENT_SNIPPET
   REPLY_COMMENT
   LIKE_COMMENT
   FOLLOW_USER
