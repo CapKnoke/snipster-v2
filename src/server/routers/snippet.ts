@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter } from '../createRouter';
-import { prisma } from '../prisma';
+import { createRouter } from '@server/createRouter';
+import { prisma } from '@server/prisma';
 import {
   commentSnippetSelect,
   defaultSnippetSelect,
@@ -36,65 +36,62 @@ export const snippetRouter = createRouter()
   .query('byId', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
-      const snippet = await prisma.snippet.findUnique({
-        where: { id },
+      const snippetById = await prisma.snippet.findUnique({
+        where: { ...input },
         select: defaultSnippetSelect,
       });
       if (
-        !snippet ||
-        snippet.deleted ||
-        (snippet.author.id !== ctx.userId && snippet.public === false)
+        !snippetById ||
+        snippetById.deleted ||
+        (snippetById.author.id !== ctx.userId && snippetById.public === false)
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No snippet with id '${id}'`,
+          message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippet;
+      return snippetById;
     },
   })
   .query('eventsById', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
-      const snippet = await prisma.snippet.findUnique({
-        where: { id },
+      const snippetWithEvents = await prisma.snippet.findUnique({
+        where: { ...input },
         select: eventSnippetSelect,
       });
       if (
-        !snippet ||
-        snippet.deleted ||
-        (snippet.authorId !== ctx.userId && snippet.public === false)
+        !snippetWithEvents ||
+        snippetWithEvents.deleted ||
+        (snippetWithEvents.authorId !== ctx.userId && snippetWithEvents.public === false)
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No snippet with id '${id}'`,
+          message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippet.events;
+      return snippetWithEvents.events;
     },
   })
   .query('commentsById', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
-      const snippet = await prisma.snippet.findUnique({
-        where: { id },
+      const snippetWithComments = await prisma.snippet.findUnique({
+        where: { ...input },
         select: commentSnippetSelect,
       });
       if (
-        !snippet ||
-        snippet.deleted ||
-        (snippet.authorId !== ctx.userId && snippet.public === false)
+        !snippetWithComments ||
+        snippetWithComments.deleted ||
+        (snippetWithComments.authorId !== ctx.userId && snippetWithComments.public === false)
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No snippet with id '${id}'`,
+          message: `No snippet with id '${input.id}'`,
         });
       }
-      return snippet.comments;
-    }
+      return snippetWithComments.comments;
+    },
   })
   // MUTATIONS
   .mutation('add', {
@@ -106,17 +103,17 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to create a snippet',
         });
       }
-      const snippet = await prisma.snippet.create({
+      const createdSnippet = await prisma.snippet.create({
         data: getCreateSnippetData(input, ctx),
         select: idSnippetSelect,
       });
-      if (!snippet) {
+      if (!createdSnippet) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create snippet',
         });
       }
-      return snippet.id;
+      return createdSnippet.id;
     },
   })
   .mutation('vote', {
@@ -128,19 +125,20 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to upvote a snippet',
         });
       }
-      const snippet = await prisma.snippet.update({
+      const votedSnippet = await prisma.snippet.update({
         where: { ...input },
         data: getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
-      if (snippet.votes.some(({ userId }) => userId === ctx.userId)) {
-        await prisma.snippet.update({
+      if (votedSnippet.votes.some(({ userId }) => userId === ctx.userId)) {
+        const unvotedSnippet = await prisma.snippet.update({
           where: { ...input },
           data: getUnvoteSnippetData(ctx),
           select: voteSnippetSelect,
         });
+        return unvotedSnippet;
       }
-      return snippet;
+      return votedSnippet;
     },
   })
   .mutation('favorite', {
@@ -152,12 +150,12 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to favorite a snippet',
         });
       }
-      const snippet = await prisma.snippet.update({
+      const favoritedSnippet = await prisma.snippet.update({
         where: { ...input },
         data: getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
-      if (snippet.favorites.some(({ userId }) => userId === ctx.userId)) {
+      if (favoritedSnippet.favorites.some(({ userId }) => userId === ctx.userId)) {
         const unfavoritedSnippet = await prisma.snippet.update({
           where: { ...input },
           data: getUnfavoriteSnippetData(ctx),
@@ -165,7 +163,7 @@ export const snippetRouter = createRouter()
         });
         return unfavoritedSnippet;
       }
-      return snippet;
+      return favoritedSnippet;
     },
   })
   .mutation('delete', {
@@ -177,7 +175,15 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to delete a snippet',
         });
       }
-      const { id } = input;
-      return { id };
+      const deleted = await prisma.snippet.deleteMany({
+        where: { AND: [{ id: input.id }, { authorId: ctx.userId }] },
+      });
+      if (deleted.count === 0) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You don't have permission to delete snippet with id '${input.id}'`,
+        });
+      }
+      return input.id;
     },
   });

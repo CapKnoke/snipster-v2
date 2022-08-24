@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter } from '../createRouter';
-import { prisma } from '../prisma';
+import { createRouter } from '@server/createRouter';
+import { prisma } from '@server/prisma';
 import {
   previewUserSelect,
   defaultUserSelect,
@@ -26,102 +26,96 @@ export const userRouter = createRouter()
   .query('byId', {
     input: idInput,
     async resolve({ input }) {
-      const { id } = input;
-      const user = await prisma.user.findUnique({
-        where: { id },
+      const userById = await prisma.user.findUnique({
+        where: { ...input },
         select: defaultUserSelect,
       });
-      if (!user) {
+      if (!userById) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No user with id '${id}'`,
+          message: `No user with id '${input.id}'`,
         });
       }
-      return user;
+      return userById;
     },
   })
   .query('snippetsById', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const { id } = input;
-      const isOwnUser = ctx.userId === id;
-      const user = await prisma.user.findUnique({
-        where: { id },
+      const isOwnUser = ctx.userId === input.id;
+      const userWithSnippets = await prisma.user.findUnique({
+        where: { ...input },
         select: isOwnUser ? snippetsOwnUserSelect : snippetsUserSelect,
       });
-      if (!user) {
+      if (!userWithSnippets) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No user with id '${id}'`,
+          message: `No user with id '${input.id}'`,
         });
       }
-      return user.snippets;
+      return userWithSnippets.snippets;
     },
   })
   .query('eventsById', {
     input: idInput,
     async resolve({ input }) {
-      const { id } = input;
-      const user = await prisma.user.findUnique({
-        where: { id },
+      const userWithEvents = await prisma.user.findUnique({
+        where: { ...input },
         select: eventsUserSelect,
       });
-      if (!user) {
+      if (!userWithEvents) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No user with id '${id}'`,
+          message: `No user with id '${input.id}'`,
         });
       }
-      return user.events;
+      return userWithEvents.events;
     },
   })
   .query('activityById', {
     input: idInput,
     async resolve({ input }) {
-      const { id } = input;
-      const user = await prisma.user.findUnique({
-        where: { id },
+      const userWithActivity = await prisma.user.findUnique({
+        where: { ...input },
         select: activityUserSelect,
       });
-      if (!user) {
+      if (!userWithActivity) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No user with id '${id}'`,
+          message: `No user with id '${input.id}'`,
         });
       }
-      return user.actions;
+      return userWithActivity.actions;
     },
   })
   .query('feedById', {
     input: idInput,
     async resolve({ input }) {
-      const { id } = input;
-      const user = await prisma.user.findUnique({
-        where: { id },
+      const userWithFeed = await prisma.user.findUnique({
+        where: { ...input },
         select: feedUserSelect,
       });
-      if (!user) {
+      if (!userWithFeed) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `No user with id '${id}'`,
+          message: `No user with id '${input.id}'`,
         });
       }
-      return user.following
-        .flatMap(({actions}) => actions)
-        .sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate())
+      return userWithFeed.following
+        .flatMap(({ actions }) => actions)
+        .sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate());
     },
   })
   // MUTATIONS
   .mutation('edit', {
     input: editUserInput,
     async resolve({ input }) {
-      const { id, data } = input;
-      const user = await prisma.user.update({
-        where: { id },
-        data,
+      const updatedUser = await prisma.user.update({
+        where: { id: input.id },
+        data: { ...input.data },
         select: defaultUserSelect,
       });
-      return user;
+      return updatedUser;
     },
   })
   .mutation('follow', {
@@ -133,12 +127,12 @@ export const userRouter = createRouter()
           message: 'You must be logged in to follow a user',
         });
       }
-      const user = await prisma.user.update({
+      const followedUser = await prisma.user.update({
         where: { ...input },
         data: getFollowUserData(ctx),
         select: followUserSelect,
       });
-      if (user.followers.some(({ id }) => id === ctx.userId)) {
+      if (followedUser.followers.some(({ id }) => id === ctx.userId)) {
         const unfollowedUser = await prisma.user.update({
           where: { ...input },
           data: getUnfollowUserData(ctx),
@@ -146,6 +140,6 @@ export const userRouter = createRouter()
         });
         return unfollowedUser;
       }
-      return user;
+      return followedUser;
     },
   });

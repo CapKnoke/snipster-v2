@@ -1,6 +1,7 @@
-import { createRouter } from '../createRouter';
+import { createRouter } from '@server/createRouter';
 import { snippetRouter } from './snippet';
 import { userRouter } from './user';
+import { commentRouter } from './comment';
 import { z } from 'zod';
 import superjson from 'superjson';
 
@@ -30,6 +31,7 @@ export const appRouter = createRouter()
     },
   })
   .merge('snippet.', snippetRouter)
-  .merge('user.', userRouter);
+  .merge('user.', userRouter)
+  .merge('comment.', commentRouter);
 
 export type AppRouter = typeof appRouter;
