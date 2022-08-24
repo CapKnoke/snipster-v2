@@ -37,7 +37,7 @@ export const snippetRouter = createRouter()
     input: idInput,
     async resolve({ input, ctx }) {
       const snippetById = await prisma.snippet.findUnique({
-        where: { id: input.id },
+        where: { ...input },
         select: defaultSnippetSelect,
       });
       if (
@@ -57,7 +57,7 @@ export const snippetRouter = createRouter()
     input: idInput,
     async resolve({ input, ctx }) {
       const snippetWithEvents = await prisma.snippet.findUnique({
-        where: { id: input.id },
+        where: { ...input },
         select: eventSnippetSelect,
       });
       if (
@@ -77,7 +77,7 @@ export const snippetRouter = createRouter()
     input: idInput,
     async resolve({ input, ctx }) {
       const snippetWithComments = await prisma.snippet.findUnique({
-        where: { id: input.id },
+        where: { ...input },
         select: commentSnippetSelect,
       });
       if (
@@ -103,17 +103,17 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to create a snippet',
         });
       }
-      const snippet = await prisma.snippet.create({
+      const createdSnippet = await prisma.snippet.create({
         data: getCreateSnippetData(input, ctx),
         select: idSnippetSelect,
       });
-      if (!snippet) {
+      if (!createdSnippet) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create snippet',
         });
       }
-      return snippet.id;
+      return createdSnippet.id;
     },
   })
   .mutation('vote', {

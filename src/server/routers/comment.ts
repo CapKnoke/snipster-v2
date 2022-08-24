@@ -20,17 +20,17 @@ export const commentRouter = createRouter()
           message: 'You must be logged in to comment on a snippet',
         });
       }
-      const comment = await prisma.comment.create({
+      const createdComment = await prisma.comment.create({
         data: getCreateCommentData(input, ctx),
         select: { id: true },
       });
-      if (!comment) {
+      if (!createdComment) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create comment',
         });
       }
-      return comment.id;
+      return createdComment.id;
     },
   })
   .mutation('reply', {
@@ -91,7 +91,7 @@ export const commentRouter = createRouter()
         });
       }
       const deleted = await prisma.comment.deleteMany({
-        where: { AND: [{ id: input.id }, { authorId: ctx.userId }] },
+        where: { AND: [{ ...input }, { authorId: ctx.userId }] },
       });
       if (deleted.count === 0) {
         throw new TRPCError({
