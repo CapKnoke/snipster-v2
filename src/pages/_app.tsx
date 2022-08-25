@@ -6,27 +6,26 @@ import { withTRPC } from '@trpc/next';
 import superjson from 'superjson';
 import type { AppRouter } from '@server/routers/_app';
 import type { SSRContext } from '@utils/trpc';
+import type { NextPage } from 'next';
+import type { AppProps } from 'next/app';
+import type { ReactElement, ReactNode } from 'react';
 import MainLayout from '@components/layouts/mainLayout';
-import { AppType } from 'next/dist/shared/lib/utils';
 
 
-const MyApp: AppType = ({ Component, pageProps }) => {
-  return (
-    <SessionProvider session={pageProps.session}>
-      <MainLayout session={pageProps.session}>
-        <Component {...pageProps} />
-      </MainLayout>
-    </SessionProvider>
-  );
-}
-
-MyApp.getInitialProps = async ({ ctx }) => {
-  return {
-    pageProps: {
-      session: await getSession(ctx),
-    },
-  };
+export type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactNode;
 };
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function MyApp({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) {
+  const getLayout = Component.getLayout ?? ((page) => <MainLayout>{page}</MainLayout>);
+  const layout = getLayout(<Component {...pageProps} />);
+
+  return <SessionProvider session={session}>{layout}</SessionProvider>;
+}
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') {
