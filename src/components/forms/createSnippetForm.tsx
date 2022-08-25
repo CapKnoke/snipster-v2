@@ -83,7 +83,6 @@ export default function CreateSnippetForm() {
                     </option>
                   ))}
                 </select>
-                <ErrorMessage errors={errors} name="data.language" />
               </label>
               <label className="input-group cursor-pointer w-fit">
                 <span>Public</span>

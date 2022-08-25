@@ -1,23 +1,31 @@
 import { trpc } from '@utils/trpc';
-import type { Session } from 'next-auth';
+import { useSession } from 'next-auth/react';
 
-type HomeProps = {
-  session?: Session;
-};
-
-export default function Home({ session }: HomeProps) {
-  const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }]);
-  if (!welcomeQuery.data) {
-    return (
-      <div className="text-center">
-        <h1 className="text-2xl">Loading...</h1>
-      </div>
-    );
-  }
+export default function Home() {
+  const { data: session, status } = useSession();
+  const welcomeQuery = trpc.useQuery(['hello', { text: session?.user?.name }], {
+    enabled: status !== 'loading',
+  });
   return (
-    <div className="text-center">
-      <h1 className="text-2xl capitalize">{welcomeQuery.data.greeting}</h1>
-      <p>This is a work in progress.</p>
+    <div className="hero flex-grow">
+      <div className="hero-content text-center">
+        <div className="max-w-lg">
+          <h1 className="text-5xl capitalize">
+            {
+              welcomeQuery.data ?
+              welcomeQuery.data.greeting :
+              'Loading...'
+            }
+          </h1>
+          {welcomeQuery.data && <p className="py-6">This is a work in progress.</p>}
+        </div>
+      </div>
     </div>
   );
+}
+
+export async function getStaticProps() {
+  return {
+    props: {}
+  }
 }

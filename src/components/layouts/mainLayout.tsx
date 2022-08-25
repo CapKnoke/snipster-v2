@@ -7,13 +7,15 @@ import type { ReactElement } from 'react';
 import UserMenu from '@features/userMenu';
 import logo from 'public/logo.svg'
 import { Session } from 'next-auth';
+import { useSession } from 'next-auth/react';
 
 type MainLayoutProps = {
   session?: Session;
   children: ReactElement;
 };
 
-export default function MainLayout({ session, children }: MainLayoutProps) {
+export default function MainLayout({ children }: MainLayoutProps) {
+  const { data: session, status } = useSession()
   return (
     <div className="min-h-screen flex flex-col">
       <Head>
@@ -35,7 +37,7 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
             </a>
           </Link>
         </div>
-        <UserMenu session={session} />
+        <UserMenu session={session} status={status} />
       </div>
       <div className="flex flex-grow flex-col-reverse lg:flex-row">
         <div className="flex sticky bottom-0 lg:fixed lg:flex-col lg:h-[calc(100vh-5rem)] justify-center items-center bg-gray-800 p-4 z-10">
@@ -46,12 +48,12 @@ export default function MainLayout({ session, children }: MainLayoutProps) {
               </a>
             </Link>
             <Link href="/create">
-              <a className={`btn btn-square${session ? "" : " btn-disabled"}`}>
+              <a className={`btn btn-square${status === 'unauthenticated' ? " btn-disabled" : ""}`}>
                 <DocumentAddIcon className="h-6 w-6" />
               </a>
             </Link>
             <Link href="#">
-              <a className={`btn btn-square${session ? "" : " btn-disabled"}`}>
+              <a className={`btn btn-square${status === 'unauthenticated' ? " btn-disabled" : ""}`}>
                 <UserIcon className="h-6 w-6" />
               </a>
             </Link>

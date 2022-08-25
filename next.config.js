@@ -22,6 +22,8 @@ module.exports = getConfig({
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: [],
+    domains: [
+      'avatars.githubusercontent.com'
+    ],
   },
 });
