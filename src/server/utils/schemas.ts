@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const createSnippetInput = z.object({
   data: z.object({
-    title: z.string().min(1).max(64),
-    description: z.string().max(140).optional(),
+    title: z.string().min(1).max(191),
+    description: z.string().max(255).optional(),
     code: z.string().min(1),
     language: z.string(),
     public: z.boolean(),
@@ -13,7 +13,7 @@ export const createSnippetInput = z.object({
 export const createCommentInput = z.object({
   data: z.object({
     snippetId: z.string().cuid(),
-    text: z.string().min(1),
+    text: z.string().min(1).max(1024),
   })
 });
 
@@ -27,7 +27,7 @@ export const replyCommentInput = z.object({
 export const editUserInput = z.object({
   id: z.string().cuid(),
   data: z.object({
-    bio: z.string().min(1).max(140).optional(),
+    bio: z.string().min(1).max(255).optional(),
   }),
 });
 
@@ -35,8 +35,8 @@ export const idInput = z.object({
   id: z.string().cuid(),
 });
 
-export type CreateSnippetInput = typeof createSnippetInput._type;
-export type CreateCommentInput = typeof createCommentInput._type;
-export type ReplyCommentInput = typeof replyCommentInput._type;
-export type EditUserInput = typeof editUserInput._type;
-export type IdInput = typeof idInput._type;
+export type CreateSnippetInput = z.infer<typeof createSnippetInput>;
+export type CreateCommentInput = z.infer<typeof createCommentInput>;
+export type ReplyCommentInput = z.infer<typeof replyCommentInput>;
+export type EditUserInput = z.infer<typeof editUserInput>;
+export type IdInput = z.infer<typeof idInput>;

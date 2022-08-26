@@ -23,16 +23,28 @@ export default function CreateSnippetForm() {
   const {
     register,
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(createSnippetInput),
+    defaultValues: {
+      data: {
+        language: 'javascript',
+        code: '',
+      },
+    }
   });
   const language = useWatch({
     control,
     name: 'data.language',
   });
-  const createMutation = trpc.useMutation(['snippet.add']);
+  const createMutation = trpc.useMutation(['snippet.add'], {
+    async onSuccess(data) {
+      reset();
+      return data;
+    },
+  });
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     createMutation.mutate(data);
   };
@@ -46,8 +58,14 @@ export default function CreateSnippetForm() {
           <Controller
             name="data.code"
             control={control}
-            render={({ field: { onChange } }) => (
-              <CodeEditor editable onChange={onChange} language={language} />
+            render={({ field: { onChange, value } }) => (
+              <CodeEditor
+                editable
+                code={value}
+                placeholder='Code'
+                onChange={onChange}
+                language={language}
+              />
             )}
           />
           <div className="text-center">
@@ -55,7 +73,7 @@ export default function CreateSnippetForm() {
           </div>
         </div>
         <div className="flex flex-col md:w-2/5 p-4">
-          <div className="flex-grow flex flex-col gap-4 justify-between">
+          <div className="flex-grow flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <input
                 type="text"
@@ -65,7 +83,7 @@ export default function CreateSnippetForm() {
               />
               <ErrorMessage errors={errors} name="data.title" />
               <textarea
-                placeholder="description"
+                placeholder="Description"
                 className="textarea textarea-bordered w-full h-32"
                 {...register('data.description')}
               />
@@ -73,7 +91,7 @@ export default function CreateSnippetForm() {
               <label className="input-group">
                 <span>Language</span>
                 <select
-                  defaultValue="javascript"
+                  // defaultValue="javascript"
                   className="select select-bordered capitalize flex-grow"
                   {...register('data.language')}
                 >

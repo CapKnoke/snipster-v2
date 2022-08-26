@@ -99,6 +99,9 @@ export const commentRouter = createRouter()
           message: `You don't have permission to delete comment with id '${input.id}'`,
         });
       }
+      await prisma.action.deleteMany({
+        where: { targetCommentId: input.id }
+      })
       return { id: input.id };
     },
   });
