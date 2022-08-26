@@ -49,9 +49,6 @@ export const defaultUserSelect = Prisma.validator<Prisma.UserSelect>()({
   image: true,
   bio: true,
   role: true,
-  snippets: {
-    select: previewSnippetSelect,
-  },
   followers: {
     select: previewUserSelect,
   },
@@ -102,7 +99,24 @@ export const defaultSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
   public: true,
 });
 
+export const defaultActionSelect = Prisma.validator<Prisma.ActionSelect>()({
+  id: true,
+  user: { select: previewUserSelect },
+  targetComment: { select: previewCommentSelect },
+  targetSnippet: { select: previewSnippetSelect },
+  createdAt: true,
+});
+
 // USER SELECTORS
+export const followingIdsUserSelect = Prisma.validator<Prisma.UserSelect>()({
+  id: true,
+  followers: {
+    select: {
+      id: true,
+    },
+  },
+});
+
 export const followUserSelect = Prisma.validator<Prisma.UserSelect>()({
   id: true,
   followers: {
@@ -122,6 +136,7 @@ export const snippetsUserSelect = Prisma.validator<Prisma.UserSelect>()({
   snippets: {
     where: { deleted: false, public: true },
     select: previewSnippetSelect,
+    orderBy: { createdAt: 'desc' },
   },
 });
 
@@ -130,47 +145,7 @@ export const snippetsOwnUserSelect = Prisma.validator<Prisma.UserSelect>()({
   snippets: {
     where: { deleted: false },
     select: previewSnippetSelect,
-  },
-});
-
-export const eventsUserSelect = Prisma.validator<Prisma.UserSelect>()({
-  id: true,
-  events: {
-    select: {
-      user: { select: previewUserSelect },
-      targetComment: { select: previewCommentSelect },
-      targetSnippet: { select: previewSnippetSelect },
-      createdAt: true,
-    },
-  },
-});
-
-export const activityUserSelect = Prisma.validator<Prisma.UserSelect>()({
-  id: true,
-  actions: {
-    select: {
-      targetUser: { select: previewUserSelect },
-      targetComment: { select: previewCommentSelect },
-      targetSnippet: { select: previewSnippetSelect },
-      createdAt: true,
-    },
-  },
-});
-
-export const feedUserSelect = Prisma.validator<Prisma.UserSelect>()({
-  id: true,
-  following: {
-    select: {
-      actions: {
-        select: {
-          user: { select: previewUserSelect },
-          targetUser: { select: previewUserSelect },
-          targetComment: { select: previewCommentSelect },
-          targetSnippet: { select: previewSnippetSelect },
-          createdAt: true,
-        },
-      },
-    },
+    orderBy: { createdAt: 'desc' },
   },
 });
 

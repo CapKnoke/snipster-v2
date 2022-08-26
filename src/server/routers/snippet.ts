@@ -184,6 +184,9 @@ export const snippetRouter = createRouter()
           message: `You don't have permission to delete snippet with id '${input.id}'`,
         });
       }
+      await prisma.action.deleteMany({
+        where: { targetSnippetId: input.id }
+      })
       return { id: input.id };
     },
   });

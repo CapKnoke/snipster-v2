@@ -35,7 +35,7 @@ export const idInput = z.object({
   id: z.string().cuid(),
 });
 
-export type CreateSnippetInput = z.infer<typeof createCommentInput>;
+export type CreateSnippetInput = z.infer<typeof createSnippetInput>;
 export type CreateCommentInput = z.infer<typeof createCommentInput>;
 export type ReplyCommentInput = z.infer<typeof replyCommentInput>;
 export type EditUserInput = z.infer<typeof editUserInput>;

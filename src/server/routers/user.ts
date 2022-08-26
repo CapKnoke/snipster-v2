@@ -7,9 +7,8 @@ import {
   followUserSelect,
   snippetsUserSelect,
   snippetsOwnUserSelect,
-  activityUserSelect,
-  eventsUserSelect,
-  feedUserSelect,
+  defaultActionSelect,
+  followingIdsUserSelect,
 } from '@server/utils/selectors';
 import { editUserInput, idInput } from '@server/utils/schemas';
 import { getFollowUserData, getUnfollowUserData } from '@server/utils/helpers';
@@ -21,7 +20,7 @@ export const userRouter = createRouter()
       const users = prisma.user.findMany({
         select: previewUserSelect,
       });
-      return { users }
+      return { users };
     },
   })
   .query('byId', {
@@ -60,53 +59,45 @@ export const userRouter = createRouter()
   .query('eventsById', {
     input: idInput,
     async resolve({ input }) {
-      const userWithEvents = await prisma.user.findUnique({
-        where: { ...input },
-        select: eventsUserSelect,
+      const userEvents = await prisma.action.findMany({
+        where: { targetUserId: input.id },
+        select: defaultActionSelect,
+        orderBy: { createdAt: 'desc' },
       });
-      if (!userWithEvents) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No user with id '${input.id}'`,
-        });
-      }
-      return { events: userWithEvents.events };
+      return { events: userEvents };
     },
   })
   .query('activityById', {
     input: idInput,
     async resolve({ input }) {
-      const userWithActivity = await prisma.user.findUnique({
-        where: { ...input },
-        select: activityUserSelect,
+      const userActions = await prisma.action.findMany({
+        where: { userId: input.id },
+        select: defaultActionSelect,
+        orderBy: { createdAt: 'desc' },
       });
-      if (!userWithActivity) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No user with id '${input.id}'`,
-        });
-      }
-      return { actions: userWithActivity.actions };
+      return { actions: userActions };
     },
   })
   .query('feedById', {
     input: idInput,
     async resolve({ input }) {
-      const userWithFeed = await prisma.user.findUnique({
+      const userWithFollowingIds = await prisma.user.findUnique({
         where: { ...input },
-        select: feedUserSelect,
+        select: followingIdsUserSelect,
       });
-      if (!userWithFeed) {
+      if (!userWithFollowingIds) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `No user with id '${input.id}'`,
         });
       }
-      return {
-        feed: userWithFeed.following
-          .flatMap(({ actions }) => actions)
-          .sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate())
-      };
+      const followingIds = userWithFollowingIds.followers.map(({ id }) => id);
+      const userFeed = await prisma.action.findMany({
+        where: { userId: { in: followingIds } },
+        select: defaultActionSelect,
+        orderBy: { createdAt: 'desc' },
+      });
+      return { feed: userFeed };
     },
   })
   // MUTATIONS
