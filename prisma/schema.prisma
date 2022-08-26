@@ -44,6 +44,7 @@ model User {
   image         String?
   bio           String?   @db.VarChar(255)
   role          Role      @default(USER)
+  theme         Theme     @default(System)
   sessions      Session[]
   accounts      Account[]
 
@@ -170,4 +171,10 @@ enum ActionType {
   REPLY_COMMENT
   LIKE_COMMENT
   FOLLOW_USER
+}
+
+enum Theme {
+  System
+  Light
+  Dark
 }

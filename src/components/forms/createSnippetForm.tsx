@@ -91,7 +91,6 @@ export default function CreateSnippetForm() {
               <label className="input-group">
                 <span>Language</span>
                 <select
-                  // defaultValue="javascript"
                   className="select select-bordered capitalize flex-grow"
                   {...register('data.language')}
                 >
