@@ -14,8 +14,8 @@ export default function ThemeSelectSwap({ theme, setTheme }: SelectFieldProps) {
   return (
     <label className="swap swap-rotate btn-circle btn btn-ghost">
       <input type="checkbox" onChange={handleChange} />
-      <SunIcon className="swap-on fill-current w-6 h-6" />
-      <MoonIcon className="swap-off fill-current w-6 h-6" />
+      <SunIcon className="swap-on w-6 h-6" />
+      <MoonIcon className="swap-off w-6 h-6" />
     </label>
   );
 }
