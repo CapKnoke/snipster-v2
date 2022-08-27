@@ -9,7 +9,7 @@ import superjson from 'superjson';
 export default function SnippetById({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
   const snippetQuery = trpc.useQuery(['snippet.byId', { id }]);
   if (snippetQuery.status !== 'success') {
-    return <SnippetDetail snippet={null} />;
+    return <div>Loading...</div>;
   }
   return <SnippetDetail snippet={snippetQuery.data} />;
 }
@@ -32,7 +32,7 @@ export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string }>)
       trpcState: ssg.dehydrate(),
       id,
     },
-    revalidate: 60,
+    revalidate: 10,
   };
 }
 
