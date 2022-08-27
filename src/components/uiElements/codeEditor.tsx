@@ -17,7 +17,7 @@ type CodeEditorProps = {
 
 export default function CodeEditor({
   language = 'javascript',
-  editable,
+  editable = false,
   placeholder,
   code,
   onChange,
