@@ -43,9 +43,7 @@ export const snippetRouter = createRouter()
       if (
         !snippetById ||
         snippetById.deleted ||
-        (snippetById.author.id !== ctx.userId &&
-          snippetById.public === false &&
-          ctx.role !== 'ADMIN')
+        (snippetById.author.id !== ctx.userId && !snippetById.public && ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -65,7 +63,8 @@ export const snippetRouter = createRouter()
       if (
         !snippetWithEvents ||
         snippetWithEvents.deleted ||
-        (snippetWithEvents.authorId !== ctx.userId && snippetWithEvents.public === false &&
+        (snippetWithEvents.authorId !== ctx.userId &&
+          !snippetWithEvents.public &&
           ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({
@@ -86,7 +85,8 @@ export const snippetRouter = createRouter()
       if (
         !snippetWithComments ||
         snippetWithComments.deleted ||
-        (snippetWithComments.authorId !== ctx.userId && snippetWithComments.public === false &&
+        (snippetWithComments.authorId !== ctx.userId &&
+          !snippetWithComments.public &&
           ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({

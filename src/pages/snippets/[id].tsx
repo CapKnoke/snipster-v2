@@ -1,27 +1,36 @@
 import SnippetDetail from '@components/uiElements/snippetDetail';
-import { createContext } from '@server/context';
 import { prisma } from '@server/prisma';
 import { appRouter } from '@server/routers/_app';
 import { createSSGHelpers } from '@trpc/react/ssg';
+import { trpc } from '@utils/trpc';
 import { GetStaticPropsContext, InferGetStaticPropsType } from 'next';
 import superjson from 'superjson';
 
-export default function SnippetById({ snippet }: InferGetStaticPropsType<typeof getStaticProps>) {
-  return <SnippetDetail snippet={snippet} />;
+export default function SnippetById({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const snippetQuery = trpc.useQuery(['snippet.byId', { id }]);
+  if (snippetQuery.status !== 'success') {
+    return <SnippetDetail snippet={null} />;
+  }
+  return <SnippetDetail snippet={snippetQuery.data} />;
 }
 
 export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string }>) {
   const ssg = createSSGHelpers({
     router: appRouter,
-    ctx: await createContext(),
+    ctx: {
+      userId: undefined,
+      role: 'ADMIN'
+    },
     transformer: superjson,
   });
   const id = ctx.params?.id as string;
-  const snippet = await ssg.fetchQuery('snippet.byId', { id });
+  await ssg.fetchQuery('snippet.byId', {
+    id,
+  });
   return {
     props: {
       trpcState: ssg.dehydrate(),
-      snippet,
+      id,
     },
     revalidate: 60,
   };
