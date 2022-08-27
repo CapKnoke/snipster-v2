@@ -19,6 +19,7 @@ export const createCommentInput = z.object({
 
 export const replyCommentInput = z.object({
   id: z.string().cuid(),
+  snippetId: z.string().cuid(),
   data: z.object({
     text: z.string().min(1),
   })
