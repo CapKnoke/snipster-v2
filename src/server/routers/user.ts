@@ -20,7 +20,7 @@ export const userRouter = createRouter()
       const users = prisma.user.findMany({
         select: previewUserSelect,
       });
-      return { users };
+      return users;
     },
   })
   .query('byId', {
@@ -36,7 +36,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return { user: userById };
+      return userById;
     },
   })
   .query('snippetsById', {
@@ -53,7 +53,7 @@ export const userRouter = createRouter()
           message: `No user with id '${input.id}'`,
         });
       }
-      return { snippets: userWithSnippets.snippets };
+      return userWithSnippets.snippets;
     },
   })
   .query('eventsById', {
@@ -64,7 +64,7 @@ export const userRouter = createRouter()
         select: defaultActionSelect,
         orderBy: { createdAt: 'desc' },
       });
-      return { events: userEvents };
+      return userEvents;
     },
   })
   .query('activityById', {
@@ -75,7 +75,7 @@ export const userRouter = createRouter()
         select: defaultActionSelect,
         orderBy: { createdAt: 'desc' },
       });
-      return { actions: userActions };
+      return userActions;
     },
   })
   .query('feedById', {
@@ -97,7 +97,7 @@ export const userRouter = createRouter()
         select: defaultActionSelect,
         orderBy: { createdAt: 'desc' },
       });
-      return { feed: userFeed };
+      return userFeed;
     },
   })
   // MUTATIONS
@@ -109,7 +109,7 @@ export const userRouter = createRouter()
         data: { ...input.data },
         select: defaultUserSelect,
       });
-      return { user: updatedUser };
+      return updatedUser;
     },
   })
   .mutation('follow', {
@@ -132,8 +132,8 @@ export const userRouter = createRouter()
           data: getUnfollowUserData(ctx),
           select: followUserSelect,
         });
-        return { user: unfollowedUser };
+        return unfollowedUser;
       }
-      return { user: followedUser };
+      return followedUser;
     },
   });

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { LoginIcon } from '@heroicons/react/outline';
 import { signIn } from 'next-auth/react';
 import ThemeSelectSwap from './themeSelectSwap';

@@ -1,9 +1,9 @@
+import React, { ReactElement } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Head from 'next/head';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { HomeIcon, UserIcon, DocumentAddIcon } from '@heroicons/react/outline';
-import type { ReactElement } from 'react';
+import { HomeIcon, UserIcon, CodeIcon } from '@heroicons/react/outline';
 import UserMenu from '@features/userMenu';
 import logo from 'public/logo.svg'
 import { Session } from 'next-auth';
@@ -49,7 +49,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </Link>
             <Link href="/create">
               <a className={`btn btn-square${status === 'unauthenticated' ? " btn-disabled" : ""}`}>
-                <DocumentAddIcon className="h-6 w-6" />
+                <CodeIcon className="h-6 w-6" />
               </a>
             </Link>
             <Link href="#">

@@ -43,14 +43,16 @@ export const snippetRouter = createRouter()
       if (
         !snippetById ||
         snippetById.deleted ||
-        (snippetById.author.id !== ctx.userId && snippetById.public === false)
+        (snippetById.author.id !== ctx.userId &&
+          snippetById.public === false &&
+          ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return { snippet: snippetById };
+      return snippetById;
     },
   })
   .query('eventsById', {
@@ -63,14 +65,15 @@ export const snippetRouter = createRouter()
       if (
         !snippetWithEvents ||
         snippetWithEvents.deleted ||
-        (snippetWithEvents.authorId !== ctx.userId && snippetWithEvents.public === false)
+        (snippetWithEvents.authorId !== ctx.userId && snippetWithEvents.public === false &&
+          ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return { events: snippetWithEvents.events };
+      return snippetWithEvents.events;
     },
   })
   .query('commentsById', {
@@ -83,14 +86,15 @@ export const snippetRouter = createRouter()
       if (
         !snippetWithComments ||
         snippetWithComments.deleted ||
-        (snippetWithComments.authorId !== ctx.userId && snippetWithComments.public === false)
+        (snippetWithComments.authorId !== ctx.userId && snippetWithComments.public === false &&
+          ctx.role !== 'ADMIN')
       ) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `No snippet with id '${input.id}'`,
         });
       }
-      return { comments: snippetWithComments.comments };
+      return snippetWithComments.comments;
     },
   })
   // MUTATIONS
@@ -136,9 +140,9 @@ export const snippetRouter = createRouter()
           data: getUnvoteSnippetData(ctx),
           select: voteSnippetSelect,
         });
-        return { snippet: unvotedSnippet };
+        return unvotedSnippet;
       }
-      return { snippet: votedSnippet };
+      return votedSnippet;
     },
   })
   .mutation('favorite', {
@@ -161,9 +165,9 @@ export const snippetRouter = createRouter()
           data: getUnfavoriteSnippetData(ctx),
           select: favoriteSnippetSelect,
         });
-        return { snippet: unfavoritedSnippet };
+        return unfavoritedSnippet;
       }
-      return { snippet: favoritedSnippet };
+      return favoritedSnippet;
     },
   })
   .mutation('delete', {
@@ -185,8 +189,11 @@ export const snippetRouter = createRouter()
         });
       }
       await prisma.action.deleteMany({
-        where: { targetSnippetId: input.id }
-      })
+        where: { targetSnippetId: input.id },
+      });
+      await prisma.comment.deleteMany({
+        where: { snippetId: input.id },
+      });
       return { id: input.id };
     },
   });

@@ -12,6 +12,7 @@ type CodeEditorProps = {
   placeholder?: string;
   code?: string;
   onChange?(value: string): void;
+  className?: string;
 };
 
 export default function CodeEditor({
@@ -20,6 +21,7 @@ export default function CodeEditor({
   placeholder,
   code,
   onChange,
+  className
 }: CodeEditorProps) {
   const extensions = [EditorView.lineWrapping] as Extension[];
   const lang = loadLanguage(language);
@@ -36,7 +38,7 @@ export default function CodeEditor({
       theme={githubDark}
       extensions={extensions}
       editable={editable}
-      className="flex-grow overflow-y-auto"
+      className={`flex-grow overflow-y-auto${className && ` ${className}`}`}
     />
   );
 }
