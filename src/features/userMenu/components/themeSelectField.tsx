@@ -1,4 +1,4 @@
-import { Fragment, Dispatch, SetStateAction } from 'react';
+import React, { Fragment, Dispatch, SetStateAction } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid';
 import { themeOptions } from '../utils/userMenuUtils';
@@ -10,7 +10,7 @@ type SelectFieldProps = {
 };
 
 export default function ThemeSelectField({ selected, setSelected }: SelectFieldProps) {
-  return (selected &&
+  return (
     <Listbox as="div" value={selected} onChange={setSelected} className="text-sm flex-grow">
       <div className="relative">
         <Listbox.Button className="relative w-full cursor-default rounded-lg bg-gray-800 py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300">

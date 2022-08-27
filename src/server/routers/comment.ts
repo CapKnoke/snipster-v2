@@ -53,7 +53,7 @@ export const commentRouter = createRouter()
           message: 'Failed to create reply',
         });
       }
-      return { comment: reply };
+      return reply;
     },
   })
   .mutation('like', {
@@ -76,9 +76,9 @@ export const commentRouter = createRouter()
           data: getUnlikeCommentData(ctx),
           select: likeCommentSelect,
         });
-        return { comment: unlikedComment };
+        return unlikedComment;
       }
-      return { comment: likedComment };
+      return likedComment;
     },
   })
   .mutation('delete', {

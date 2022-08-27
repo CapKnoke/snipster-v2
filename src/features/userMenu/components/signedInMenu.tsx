@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { UserIcon, LogoutIcon } from '@heroicons/react/outline';
 import { User } from 'next-auth';
 import { Menu, Transition } from '@headlessui/react';

@@ -8,6 +8,7 @@ import { createSnippetInput } from '@server/utils/schemas';
 import CodeEditor from '@components/uiElements/codeEditor';
 import ErrorToast from '@components/toasts/errorToast';
 import SuccessToast from '@components/toasts/successToast';
+import { DocumentAddIcon } from '@heroicons/react/outline';
 
 export type FormValues = {
   data: {
@@ -52,7 +53,7 @@ export default function CreateSnippetForm() {
     <>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col md:flex-row bg-gray-900 rounded"
+        className="flex flex-col md:flex-row rounded-md"
       >
         <div className="flex flex-col md:w-3/5">
           <Controller
@@ -62,9 +63,10 @@ export default function CreateSnippetForm() {
               <CodeEditor
                 editable
                 code={value}
-                placeholder='Code'
+                placeholder='Code...'
                 onChange={onChange}
                 language={language}
+                className="rounded-t-md md:rounded-t-none md:rounded-l-md text-base"
               />
             )}
           />
@@ -72,7 +74,7 @@ export default function CreateSnippetForm() {
             <ErrorMessage errors={errors} name="data.code" />
           </div>
         </div>
-        <div className="flex flex-col md:w-2/5 p-4">
+        <div className="flex flex-col md:w-2/5 p-4 bg-gray-900">
           <div className="flex-grow flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <input
@@ -111,7 +113,10 @@ export default function CreateSnippetForm() {
                 />
               </label>
             </div>
-            <input type="submit" className="btn btn-block" />
+            <button type="submit" className="btn btn-block btn-primary text-base" >
+              Submit
+              <DocumentAddIcon className="h-5 w-5 ml-1" />
+            </button>
           </div>
         </div>
       </form>

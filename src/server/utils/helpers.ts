@@ -115,11 +115,12 @@ export const getCreateCommentData = ({ data }: CreateCommentInput, ctx: Context)
     },
   });
 
-export const getReplyCommentData = ({ data }: ReplyCommentInput, ctx: Context) =>
+export const getReplyCommentData = ({ data, snippetId }: ReplyCommentInput, ctx: Context) =>
   Prisma.validator<Prisma.CommentUpdateInput>()({
     replies: {
       create: {
         author: { connect: { id: ctx.userId } },
+        snippet: { connect: { id: snippetId } },
         text: data.text,
       },
     },

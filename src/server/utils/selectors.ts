@@ -232,4 +232,3 @@ export const replyCommentSelect = Prisma.validator<Prisma.CommentSelect>()({
     },
   },
 });
-

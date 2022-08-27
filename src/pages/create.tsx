@@ -6,6 +6,6 @@ export default function Create() {
 
 export async function getStaticProps() {
   return {
-    props: {}
-  }
+    props: {},
+  };
 }
