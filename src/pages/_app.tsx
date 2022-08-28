@@ -11,7 +11,6 @@ import type { AppProps } from 'next/app';
 import type { ReactElement, ReactNode } from 'react';
 import MainLayout from '@components/layouts/mainLayout';
 
-
 export type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -37,16 +36,12 @@ function getBaseUrl() {
     return `https://${process.env.VERCEL_URL}`;
   }
 
-  // assume localhost
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
 export default withTRPC<AppRouter>({
   config({ ctx }) {
     return {
-      /**
-       * @link https://trpc.io/docs/links
-       */
       links: [
         loggerLink({
           enabled: (opts) =>
@@ -57,21 +52,17 @@ export default withTRPC<AppRouter>({
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
-      /**
-       * @link https://trpc.io/docs/data-transformers
-       */
       transformer: superjson,
       /**
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
-       queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
     };
   },
   ssr: true,
   responseMeta(opts) {
     const ctx = opts.ctx as SSRContext;
     if (ctx.req) {
-      // on ssr, forward client's headers to the server
       return {
         ...ctx.req.headers,
         'x-ssr': '1',
@@ -79,12 +70,10 @@ export default withTRPC<AppRouter>({
     }
     const error = opts.clientErrors[0];
     if (error) {
-      // Propagate http first error from API calls
       return {
         status: error.data?.httpStatus ?? 500,
       };
     }
-    // For app caching with SSR see https://trpc.io/docs/caching
     return {};
   },
 })(MyApp);
