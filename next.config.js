@@ -10,7 +10,12 @@ function getConfig(config) {
   return config;
 }
 
-module.exports = getConfig({
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+module.exports = withBundleAnalyzer({})
+
+module.exports = withBundleAnalyzer(getConfig({
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`
@@ -26,4 +31,4 @@ module.exports = getConfig({
       'avatars.githubusercontent.com'
     ],
   },
-});
+}));

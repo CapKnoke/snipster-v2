@@ -37,7 +37,7 @@ export default function CodeEditor({
       theme={githubDark}
       extensions={extensions}
       editable={editable}
-      className={`flex-grow overflow-y-auto${className && ` ${className}`}`}
+      className={`grow overflow-y-auto${className && ` ${className}`}`}
     />
   );
 }
