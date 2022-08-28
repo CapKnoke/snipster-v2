@@ -34,7 +34,6 @@ export default function CodeEditor({
       onChange={onChange}
       placeholder={placeholder}
       height="100%"
-      minHeight="20rem"
       theme={githubDark}
       extensions={extensions}
       editable={editable}

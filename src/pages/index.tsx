@@ -11,11 +11,7 @@ export default function Home() {
       <div className="hero-content text-center">
         <div className="max-w-lg">
           <h1 className="text-5xl capitalize">
-            {
-              welcomeQuery.data ?
-              welcomeQuery.data.greeting :
-              'Loading...'
-            }
+            {welcomeQuery.data ? welcomeQuery.data.greeting : 'Loading...'}
           </h1>
           {welcomeQuery.data && <p className="py-6">This is a work in progress.</p>}
         </div>
@@ -26,6 +22,6 @@ export default function Home() {
 
 export async function getStaticProps() {
   return {
-    props: {}
-  }
+    props: {},
+  };
 }
