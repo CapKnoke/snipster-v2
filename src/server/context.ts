@@ -7,8 +7,8 @@ export async function createContext(opts?: trpcNext.CreateNextContextOptions) {
   async function getUserFromCookies() {
     const enviroment = publicRuntimeConfig.NODE_ENV;
     const tokenKey =
-      enviroment === 'production'
-        ? '____Secure-next-auth.session-token'
+      enviroment === 'production' && process.env.VERCEL_URL
+        ? '__Secure-next-auth.session-token'
         : 'next-auth.session-token';
     if (opts?.req.cookies[tokenKey]) {
       const token = opts.req.cookies[tokenKey];
