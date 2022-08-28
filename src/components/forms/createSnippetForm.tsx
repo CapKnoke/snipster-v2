@@ -66,7 +66,7 @@ export default function CreateSnippetForm() {
                 placeholder='Code...'
                 onChange={onChange}
                 language={language}
-                className="rounded-t-md md:rounded-t-none md:rounded-l-md text-base"
+                className="min-h-[20rem] rounded-t-md md:rounded-t-none md:rounded-l-md text-base"
               />
             )}
           />
@@ -75,7 +75,7 @@ export default function CreateSnippetForm() {
           </div>
         </div>
         <div className="flex flex-col md:w-2/5 p-4 bg-gray-900">
-          <div className="flex-grow flex flex-col gap-10">
+          <div className="grow flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <input
                 type="text"
@@ -93,7 +93,7 @@ export default function CreateSnippetForm() {
               <label className="input-group">
                 <span>Language</span>
                 <select
-                  className="select select-bordered capitalize flex-grow"
+                  className="select select-bordered capitalize grow"
                   {...register('data.language')}
                 >
                   {langNames.map((lang) => (
