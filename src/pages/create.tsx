@@ -1,7 +1,7 @@
-import CreateSnippetForm from '@components/dynamic/createSnippetForm';
+import CreateSnippet from "@features/createSnippet";
 
 export default function Create() {
-  return <CreateSnippetForm />;
+  return <CreateSnippet />;
 }
 
 export async function getStaticProps() {

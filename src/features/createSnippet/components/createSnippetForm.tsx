@@ -1,14 +1,15 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import { LanguageName, langNames } from '@uiw/codemirror-extensions-langs';
 import { useForm, useWatch, SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ErrorMessage } from '@hookform/error-message';
-import { trpc } from '@utils/trpc';
+import { DocumentAddIcon } from '@heroicons/react/outline';
 import { createSnippetInput } from '@server/utils/schemas';
-import CodeEditor from '@components/uiElements/codeEditor';
+import { trpc } from '@utils/trpc';
+import CodeEditor from '@features/createSnippet/components/codeEditor';
 import ErrorToast from '@components/toasts/errorToast';
 import SuccessToast from '@components/toasts/successToast';
-import { DocumentAddIcon } from '@heroicons/react/outline';
 
 export type FormValues = {
   data: {
@@ -24,7 +25,6 @@ export default function CreateSnippetForm() {
   const {
     register,
     handleSubmit,
-    reset,
     control,
     formState: { errors },
   } = useForm<FormValues>({
@@ -34,15 +34,16 @@ export default function CreateSnippetForm() {
         language: 'javascript',
         code: '',
       },
-    }
+    },
   });
   const language = useWatch({
     control,
     name: 'data.language',
   });
+  const router = useRouter();
   const createMutation = trpc.useMutation(['snippet.add'], {
     async onSuccess(data) {
-      reset();
+      router.push(`/snippets/${data.id}`);
       return data;
     },
   });
@@ -51,11 +52,8 @@ export default function CreateSnippetForm() {
   };
   return (
     <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col md:flex-row rounded-md"
-      >
-        <div className="flex flex-col md:w-3/5">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col md:flex-row shadow-lg md:max-h-[calc(100vh-12rem)] lg:max-h-[calc(100vh-7rem)]">
+        <div className="flex flex-col md:w-3/5 bg-[#0d1117] rounded-t-md md:rounded-t-none md:rounded-l-md">
           <Controller
             name="data.code"
             control={control}
@@ -63,7 +61,7 @@ export default function CreateSnippetForm() {
               <CodeEditor
                 editable
                 code={value}
-                placeholder='Code...'
+                placeholder="Code..."
                 onChange={onChange}
                 language={language}
                 className="min-h-[20rem] rounded-t-md md:rounded-t-none md:rounded-l-md text-base"
@@ -74,7 +72,7 @@ export default function CreateSnippetForm() {
             <ErrorMessage errors={errors} name="data.code" />
           </div>
         </div>
-        <div className="flex flex-col md:w-2/5 p-4 bg-gray-900">
+        <div className="flex flex-col rounded-b-md md:rounded-b-none md:rounded-r-md md:w-2/5 p-4 bg-gray-900">
           <div className="grow flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <input
@@ -86,7 +84,7 @@ export default function CreateSnippetForm() {
               <ErrorMessage errors={errors} name="data.title" />
               <textarea
                 placeholder="Description"
-                className="textarea textarea-bordered w-full h-32"
+                className="textarea textarea-bordered w-full h-32 resize-none"
                 {...register('data.description')}
               />
               <ErrorMessage errors={errors} name="data.description" />
@@ -113,7 +111,7 @@ export default function CreateSnippetForm() {
                 />
               </label>
             </div>
-            <button type="submit" className="btn btn-block btn-primary text-base" >
+            <button type="submit" className="btn btn-block btn-primary text-base">
               Submit
               <DocumentAddIcon className="h-5 w-5 ml-1" />
             </button>

@@ -2,34 +2,29 @@ import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from '
 import { createSSGHelpers } from '@trpc/react/ssg';
 import superjson from 'superjson';
 import { prisma } from '@server/prisma';
-import { createContext } from '@server/context';
 import { appRouter } from '@server/routers/_app';
+import { createContext } from '@server/context';
 import { trpc } from '@utils/trpc';
-import SnippetDetail from '@features/snippetDetail';
+import UserDetail from '@features/userDetail';
 
-export default function Snippet({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
-  const snippetQuery = trpc.useQuery(['snippet.byId', { id }], {
+export default function User({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const userQuery = trpc.useQuery(['user.byId', { id }], {
     enabled: !!id,
-    retryOnMount: true,
-    retry: false,
   });
-  if (snippetQuery.isLoading) {
+  if (!userQuery.isSuccess) {
     return <div>Loading...</div>;
   }
-  if (snippetQuery.isSuccess) {
-    return <SnippetDetail snippet={snippetQuery.data} />;
-  }
-  return <div>Error</div>;
+  return <UserDetail user={userQuery.data} />;
 }
 
-export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string; }>) {
+export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string }>) {
   const ssg = createSSGHelpers({
     router: appRouter,
     ctx: await createContext(),
     transformer: superjson,
   });
   const id = ctx.params?.id as string;
-  await ssg.prefetchQuery('snippet.byId', { id });
+  await ssg.prefetchQuery('user.byId', { id });
   return {
     props: {
       trpcState: ssg.dehydrate(),
@@ -39,8 +34,7 @@ export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string; }>
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const snippets = await prisma.snippet.findMany({
-    where: { deleted: false },
+  const snippets = await prisma.user.findMany({
     select: {
       id: true,
     },

@@ -103,7 +103,13 @@ export const userRouter = createRouter()
   // MUTATIONS
   .mutation('edit', {
     input: editUserInput,
-    async resolve({ input }) {
+    async resolve({ input, ctx }) {
+      if (!ctx.userId || ctx.userId !== input.id) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You do not have permissions to update this user',
+        });
+      }
       const updatedUser = await prisma.user.update({
         where: { id: input.id },
         data: { ...input.data },
@@ -121,19 +127,26 @@ export const userRouter = createRouter()
           message: 'You must be logged in to follow a user',
         });
       }
-      const followedUser = await prisma.user.update({
+      const targetUser = await prisma.user
+        .findFirstOrThrow({
+          where: { ...input, NOT: { id: ctx.userId } },
+          select: followUserSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: "You can't follow yourself",
+          });
+        });
+      const isFollowing = targetUser.followers
+        .some(({ id }) => id === ctx.userId);
+      const updatedUser = await prisma.user.update({
         where: { ...input },
-        data: getFollowUserData(ctx),
+        data: isFollowing
+          ? getUnfollowUserData(ctx)
+          : getFollowUserData(ctx),
         select: followUserSelect,
       });
-      if (followedUser.followers.some(({ id }) => id === ctx.userId)) {
-        const unfollowedUser = await prisma.user.update({
-          where: { ...input },
-          data: getUnfollowUserData(ctx),
-          select: followUserSelect,
-        });
-        return unfollowedUser;
-      }
-      return followedUser;
+      return updatedUser;
     },
   });
