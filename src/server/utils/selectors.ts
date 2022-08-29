@@ -58,6 +58,7 @@ export const defaultUserSelect = Prisma.validator<Prisma.UserSelect>()({
   _count: {
     select: {
       followers: true,
+      snippets: true,
     },
   },
   createdAt: true,

@@ -1,14 +1,14 @@
+import type { ReactElement, ReactNode } from 'react';
+import type { NextPage } from 'next';
+import type { AppProps } from 'next/app';
 import '../styles/globals.css';
 import { SessionProvider } from 'next-auth/react';
 import { httpBatchLink } from '@trpc/client/links/httpBatchLink';
 import { loggerLink } from '@trpc/client/links/loggerLink';
 import { withTRPC } from '@trpc/next';
 import superjson from 'superjson';
-import type { AppRouter } from '@server/routers/_app';
 import type { SSRContext } from '@utils/trpc';
-import type { NextPage } from 'next';
-import type { AppProps } from 'next/app';
-import type { ReactElement, ReactNode } from 'react';
+import type { AppRouter } from '@server/routers/_app';
 import MainLayout from '@components/layouts/mainLayout';
 
 export type NextPageWithLayout = NextPage & {

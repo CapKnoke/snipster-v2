@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Context } from '@server/context';
-import { CreateSnippetInput, CreateCommentInput, ReplyCommentInput } from './schemas';
+import { CreateSnippetInput, CreateCommentInput, ReplyCommentInput, IdInput } from './schemas';
 // USER HELPERS
 export const getFollowUserData = (ctx: Context) =>
   Prisma.validator<Prisma.UserUpdateInput>()({
@@ -30,6 +30,29 @@ export const getUnfollowUserData = (ctx: Context) =>
   });
 
 // SNIPPET HELPERS
+export const getSnippetById = ({ id }: IdInput, ctx: Context) => {
+  switch (ctx.role) {
+    case 'ADMIN':
+      return Prisma.validator<Prisma.SnippetWhereInput>()({
+        id,
+        deleted: false,
+      });
+    case 'USER':
+      return Prisma.validator<Prisma.SnippetWhereInput>()({
+        id,
+        deleted: false,
+        public: true,
+        AND: [{ authorId: ctx.userId }, { public: false }],
+      });
+    default:
+      return Prisma.validator<Prisma.SnippetWhereInput>()({
+        id,
+        deleted: false,
+        public: true,
+      });
+  }
+};
+
 export const getCreateSnippetData = ({ data }: CreateSnippetInput, ctx: Context) =>
   Prisma.validator<Prisma.SnippetCreateInput>()({
     ...data,
@@ -40,6 +63,12 @@ export const getCreateSnippetData = ({ data }: CreateSnippetInput, ctx: Context)
         actionType: 'CREATE_SNIPPET',
       },
     },
+  });
+
+export const getCreatePrivateSnippetData = ({ data }: CreateSnippetInput, ctx: Context) =>
+  Prisma.validator<Prisma.SnippetCreateInput>()({
+    ...data,
+    author: { connect: { id: ctx.userId } },
   });
 
 export const getFavoriteSnippetData = (ctx: Context) =>

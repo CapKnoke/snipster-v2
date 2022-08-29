@@ -1,5 +1,5 @@
-import { trpc } from '@utils/trpc';
 import { useSession } from 'next-auth/react';
+import { trpc } from '@utils/trpc';
 
 export default function Home() {
   const { data: session, status } = useSession();

@@ -12,10 +12,12 @@ import {
 } from '@server/utils/selectors';
 import {
   getCreateSnippetData,
+  getCreatePrivateSnippetData,
   getFavoriteSnippetData,
   getUnfavoriteSnippetData,
   getUnvoteSnippetData,
   getVoteSnippetData,
+  getSnippetById,
 } from '@server/utils/helpers';
 import { createSnippetInput, idInput } from '@server/utils/schemas';
 
@@ -28,7 +30,7 @@ export const snippetRouter = createRouter()
        * @link https://trpc.io/docs/useInfiniteQuery
        */
       return prisma.snippet.findMany({
-        where: { AND: [{ deleted: false }, { public: true }] },
+        where: { deleted: false, public: true },
         select: previewSnippetSelect,
       });
     },
@@ -36,64 +38,54 @@ export const snippetRouter = createRouter()
   .query('byId', {
     input: idInput,
     async resolve({ input, ctx }) {
-      const snippetById = await prisma.snippet.findUnique({
-        where: { ...input },
-        select: defaultSnippetSelect,
-      });
-      if (
-        !snippetById ||
-        snippetById.deleted ||
-        (snippetById.author.id !== ctx.userId && !snippetById.public && ctx.role !== 'ADMIN')
-      ) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No snippet with id '${input.id}'`,
+      const snippetById = await prisma.snippet
+        .findFirstOrThrow({
+          where: getSnippetById(input, ctx),
+          select: defaultSnippetSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `No snippet with id '${input.id}'`,
+          });
         });
-      }
+
       return snippetById;
     },
   })
   .query('eventsById', {
     input: idInput,
-    async resolve({ input, ctx }) {
-      const snippetWithEvents = await prisma.snippet.findUnique({
-        where: { ...input },
-        select: eventSnippetSelect,
-      });
-      if (
-        !snippetWithEvents ||
-        snippetWithEvents.deleted ||
-        (snippetWithEvents.authorId !== ctx.userId &&
-          !snippetWithEvents.public &&
-          ctx.role !== 'ADMIN')
-      ) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No snippet with id '${input.id}'`,
+    async resolve({ input }) {
+      const snippetWithEvents = await prisma.snippet
+        .findFirstOrThrow({
+          where: {...input, deleted: false, public: true },
+          select: eventSnippetSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `No snippet with id '${input.id}'`,
+          });
         });
-      }
+
       return snippetWithEvents.events;
     },
   })
   .query('commentsById', {
     input: idInput,
-    async resolve({ input, ctx }) {
-      const snippetWithComments = await prisma.snippet.findUnique({
-        where: { ...input },
-        select: commentSnippetSelect,
-      });
-      if (
-        !snippetWithComments ||
-        snippetWithComments.deleted ||
-        (snippetWithComments.authorId !== ctx.userId &&
-          !snippetWithComments.public &&
-          ctx.role !== 'ADMIN')
-      ) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `No snippet with id '${input.id}'`,
+    async resolve({ input }) {
+      const snippetWithComments = await prisma.snippet
+        .findFirstOrThrow({
+          where: { ...input, deleted: false, public: true },
+          select: commentSnippetSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `No snippet with id '${input.id}'`,
+          });
         });
-      }
+
       return snippetWithComments.comments;
     },
   })
@@ -108,7 +100,9 @@ export const snippetRouter = createRouter()
         });
       }
       const createdSnippet = await prisma.snippet.create({
-        data: getCreateSnippetData(input, ctx),
+        data: input.data.public
+          ? getCreateSnippetData(input, ctx)
+          : getCreatePrivateSnippetData(input, ctx),
         select: idSnippetSelect,
       });
       if (!createdSnippet) {
@@ -129,19 +123,26 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to upvote a snippet',
         });
       }
+      const targetSnippet = await prisma.snippet
+        .findFirstOrThrow({
+          where: { ...input, NOT: { authorId: ctx.userId } },
+          select: voteSnippetSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: "You can't vote on your own snippet",
+          });
+        });
+      const hasVoted = targetSnippet.votes
+        .some(({ userId }) => userId === ctx.userId);
       const votedSnippet = await prisma.snippet.update({
         where: { ...input },
-        data: getVoteSnippetData(ctx),
+        data: hasVoted
+          ? getUnvoteSnippetData(ctx)
+          : getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
-      if (votedSnippet.votes.some(({ userId }) => userId === ctx.userId)) {
-        const unvotedSnippet = await prisma.snippet.update({
-          where: { ...input },
-          data: getUnvoteSnippetData(ctx),
-          select: voteSnippetSelect,
-        });
-        return unvotedSnippet;
-      }
       return votedSnippet;
     },
   })
@@ -154,19 +155,26 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to favorite a snippet',
         });
       }
+      const targetSnippet = await prisma.snippet
+        .findFirstOrThrow({
+          where: { ...input, NOT: { authorId: ctx.userId } },
+          select: favoriteSnippetSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: "You can't favorite your own snippet",
+          });
+        });
+      const hasFavorited = targetSnippet.favorites
+        .some(({ userId }) => userId === ctx.userId);
       const favoritedSnippet = await prisma.snippet.update({
         where: { ...input },
-        data: getFavoriteSnippetData(ctx),
+        data: hasFavorited
+          ? getUnfavoriteSnippetData(ctx)
+          : getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
-      if (favoritedSnippet.favorites.some(({ userId }) => userId === ctx.userId)) {
-        const unfavoritedSnippet = await prisma.snippet.update({
-          where: { ...input },
-          data: getUnfavoriteSnippetData(ctx),
-          select: favoriteSnippetSelect,
-        });
-        return unfavoritedSnippet;
-      }
       return favoritedSnippet;
     },
   })
@@ -180,7 +188,7 @@ export const snippetRouter = createRouter()
         });
       }
       const deleted = await prisma.snippet.deleteMany({
-        where: { AND: [{ id: input.id }, { authorId: ctx.userId }] },
+        where: { id: input.id, authorId: ctx.userId },
       });
       if (deleted.count === 0) {
         throw new TRPCError({
