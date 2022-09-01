@@ -8,18 +8,16 @@ module.exports = {
   ],
   theme: {
     extend: {
-      screens: {
-        
-      },
+      screens: {},
     },
   },
   daisyui: {
     themes: [
       {
-        mytheme: {
+        dark: {
           primary: '#3b82f6',
           secondary: '#fb7185',
-          accent: '#7dd3fc',
+          accent: '#111827',
           neutral: '#191D24',
           'base-100': '#2A303C',
           info: '#3ABFF8',

@@ -46,7 +46,8 @@ export const snippetRouter = createRouter()
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: `No snippet with id '${input.id}'`,
+            message: `Snippet with id '${input.id}' is private, not generating static page`,
+            cause: 'Snippet is private',
           });
         });
 
@@ -58,7 +59,7 @@ export const snippetRouter = createRouter()
     async resolve({ input }) {
       const snippetWithEvents = await prisma.snippet
         .findFirstOrThrow({
-          where: {...input, deleted: false, public: true },
+          where: { ...input, deleted: false, public: true },
           select: eventSnippetSelect,
         })
         .catch(() => {
@@ -105,12 +106,6 @@ export const snippetRouter = createRouter()
           : getCreatePrivateSnippetData(input, ctx),
         select: idSnippetSelect,
       });
-      if (!createdSnippet) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create snippet',
-        });
-      }
       return { id: createdSnippet.id };
     },
   })
@@ -134,13 +129,10 @@ export const snippetRouter = createRouter()
             message: "You can't vote on your own snippet",
           });
         });
-      const hasVoted = targetSnippet.votes
-        .some(({ userId }) => userId === ctx.userId);
+      const hasVoted = targetSnippet.votes.some(({ userId }) => userId === ctx.userId);
       const votedSnippet = await prisma.snippet.update({
         where: { ...input },
-        data: hasVoted
-          ? getUnvoteSnippetData(ctx)
-          : getVoteSnippetData(ctx),
+        data: hasVoted ? getUnvoteSnippetData(ctx) : getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
       return votedSnippet;
@@ -166,13 +158,10 @@ export const snippetRouter = createRouter()
             message: "You can't favorite your own snippet",
           });
         });
-      const hasFavorited = targetSnippet.favorites
-        .some(({ userId }) => userId === ctx.userId);
+      const hasFavorited = targetSnippet.favorites.some(({ userId }) => userId === ctx.userId);
       const favoritedSnippet = await prisma.snippet.update({
         where: { ...input },
-        data: hasFavorited
-          ? getUnfavoriteSnippetData(ctx)
-          : getFavoriteSnippetData(ctx),
+        data: hasFavorited ? getUnfavoriteSnippetData(ctx) : getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
       return favoritedSnippet;
@@ -187,20 +176,26 @@ export const snippetRouter = createRouter()
           message: 'You must be logged in to delete a snippet',
         });
       }
-      const deleted = await prisma.snippet.deleteMany({
+      const deletedSnippet = await prisma.snippet.deleteMany({
         where: { id: input.id, authorId: ctx.userId },
       });
-      if (deleted.count === 0) {
+      if (deletedSnippet.count === 0) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: `You don't have permission to delete snippet with id '${input.id}'`,
         });
       }
-      await prisma.action.deleteMany({
+      const deleteActions = prisma.action.deleteMany({
         where: { targetSnippetId: input.id },
       });
-      await prisma.comment.deleteMany({
+      const deleteComments = prisma.comment.deleteMany({
         where: { snippetId: input.id },
+      });
+      await Promise.all([deleteActions, deleteComments]).catch(({ reason }) => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: reason,
+        });
       });
       return { id: input.id };
     },

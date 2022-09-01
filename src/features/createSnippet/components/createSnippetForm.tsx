@@ -52,8 +52,8 @@ export default function CreateSnippetForm() {
   };
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col md:flex-row shadow-lg md:max-h-[calc(100vh-12rem)] lg:max-h-[calc(100vh-7rem)]">
-        <div className="flex flex-col md:w-3/5 bg-[#0d1117] rounded-t-md md:rounded-t-none md:rounded-l-md">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2 md:flex-row md:max-h-[calc(100vh-12rem)] lg:max-h-[calc(100vh-7rem)]">
+        <div className="flex flex-col shadow-md md:w-3/5 bg-[#0d1117]">
           <Controller
             name="data.code"
             control={control}
@@ -64,7 +64,7 @@ export default function CreateSnippetForm() {
                 placeholder="Code..."
                 onChange={onChange}
                 language={language}
-                className="min-h-[20rem] rounded-t-md md:rounded-t-none md:rounded-l-md text-base"
+                className="min-h-[20rem] text-base"
               />
             )}
           />
@@ -72,7 +72,7 @@ export default function CreateSnippetForm() {
             <ErrorMessage errors={errors} name="data.code" />
           </div>
         </div>
-        <div className="flex flex-col rounded-b-md md:rounded-b-none md:rounded-r-md md:w-2/5 p-4 bg-gray-900">
+        <div className="flex flex-col shadow-md md:w-2/5 p-4 bg-neutral">
           <div className="grow flex flex-col gap-10">
             <div className="flex flex-col gap-4">
               <input

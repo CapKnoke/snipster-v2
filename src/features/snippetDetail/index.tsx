@@ -1,12 +1,6 @@
-import React, { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import React from 'react';
 import { inferQueryOutput } from '@utils/trpc';
-import { LanguageName } from '@uiw/codemirror-extensions-langs';
-import CodeViewSkeleton from '@components/skeletons/codeViewSkeleton';
-
-const CodeView = dynamic(() => import('@components/uiElements/codeView'), {
-  loading: () => <CodeViewSkeleton />,
-});
+import SnippetInfo from './components/snippetInfo';
 
 type SnippetDetailProps = {
   snippet: inferQueryOutput<'snippet.byId'>;
@@ -14,11 +8,10 @@ type SnippetDetailProps = {
 
 export default function SnippetDetail({ snippet }: SnippetDetailProps) {
   return (
-    <div className="flex min-h-[20rem]">
-      <CodeView
-        code={snippet.code}
-        language={snippet.language as LanguageName}
-      />
+    <div className="flex flex-col gap-2 md:flex-row md:max-h-[calc(100vh-12rem)] lg:max-h-[calc(100vh-7rem)]">
+      <SnippetInfo snippet={snippet} />
+      <div className="flex flex-col md:w-2/5 p-4 bg-gray-900 shadow-lg">
+      </div>
     </div>
   );
 }
