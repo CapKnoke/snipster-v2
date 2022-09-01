@@ -224,12 +224,3 @@ export const likeCommentSelect = Prisma.validator<Prisma.CommentSelect>()({
     },
   },
 });
-
-export const replyCommentSelect = Prisma.validator<Prisma.CommentSelect>()({
-  id: true,
-  _count: {
-    select: {
-      replies: true,
-    },
-  },
-});

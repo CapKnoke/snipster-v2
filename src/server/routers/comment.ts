@@ -8,7 +8,7 @@ import {
   getReplyCommentData,
   getUnlikeCommentData,
 } from '@server/utils/helpers';
-import { likeCommentSelect, replyCommentSelect } from '@server/utils/selectors';
+import { likeCommentSelect } from '@server/utils/selectors';
 
 export const commentRouter = createRouter()
   .mutation('add', {
@@ -24,13 +24,7 @@ export const commentRouter = createRouter()
         data: getCreateCommentData(input, ctx),
         select: { id: true },
       });
-      if (!createdComment) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create comment',
-        });
-      }
-      return { id: createdComment.id };
+      return createdComment;
     },
   })
   .mutation('reply', {
@@ -42,17 +36,10 @@ export const commentRouter = createRouter()
           message: 'You must be logged in to reply to comment',
         });
       }
-      const reply = await prisma.comment.update({
-        where: { id: input.id },
+      const reply = await prisma.comment.create({
         data: getReplyCommentData(input, ctx),
-        select: replyCommentSelect,
+        select: { id: true },
       });
-      if (!reply) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create reply',
-        });
-      }
       return reply;
     },
   })
@@ -65,19 +52,23 @@ export const commentRouter = createRouter()
           message: 'You must be logged in to like a comment',
         });
       }
+      const targetComment = await prisma.comment
+        .findFirstOrThrow({
+          where: { ...input, NOT: { authorId: ctx.userId } },
+          select: likeCommentSelect,
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: "You can't vote on your own snippet",
+          });
+        });
+      const hasLiked = targetComment.likes.some(({ userId }) => userId === ctx.userId);
       const likedComment = await prisma.comment.update({
         where: { ...input },
-        data: getLikeCommentData(ctx),
+        data: hasLiked ? getUnlikeCommentData(ctx) : getLikeCommentData(ctx),
         select: likeCommentSelect,
       });
-      if (likedComment.likes.some(({ userId }) => userId === ctx.userId)) {
-        const unlikedComment = await prisma.comment.update({
-          where: { ...input },
-          data: getUnlikeCommentData(ctx),
-          select: likeCommentSelect,
-        });
-        return unlikedComment;
-      }
       return likedComment;
     },
   })
@@ -90,18 +81,32 @@ export const commentRouter = createRouter()
           message: 'You must be logged in to delete a comment',
         });
       }
-      const deleted = await prisma.comment.deleteMany({
-        where: { AND: [{ ...input }, { authorId: ctx.userId }] },
+      const deletedComment = await prisma.comment.deleteMany({
+        where: {
+          OR: [
+            { ...input, authorId: ctx.userId },
+            { replyToId: input.id, authorId: ctx.userId },
+          ],
+        },
       });
-      if (deleted.count === 0) {
+      if (deletedComment.count === 0) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: `You don't have permission to delete comment with id '${input.id}'`,
         });
       }
-      await prisma.action.deleteMany({
-        where: { targetCommentId: input.id }
-      })
+      const deleteLikes = prisma.like.deleteMany({
+        where: { commentId: input.id },
+      });
+      const deleteActions = prisma.action.deleteMany({
+        where: { targetCommentId: input.id },
+      });
+      await Promise.all([deleteLikes, deleteActions]).catch(({ reason }) => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: reason,
+        });
+      });
       return { id: input.id };
     },
   });

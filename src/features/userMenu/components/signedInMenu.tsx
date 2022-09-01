@@ -18,10 +18,10 @@ export default function SignedInMenu({ user }: SignedInMenuProps) {
   const router = useRouter();
   return (
     <Menu as="div" className="relative inline-block text-left h-12 w-12">
-      <Menu.Button className="btn btn-circle">
+      <Menu.Button className="btn btn-circle btn-primary">
         {user.name ? (
           <div className="avatar placeholder">
-            <div className="rounded-full w-10">
+            <div className="rounded-full w-11">
               <span className="text-xl">{getInitials(user.name)}</span>
             </div>
           </div>
@@ -44,7 +44,7 @@ export default function SignedInMenu({ user }: SignedInMenuProps) {
                 {({ active }) => (
                     <button
                       className={`${
-                        active ? 'bg-blue-500 text-white' : 'text-gray-100'
+                        active ? 'bg-primary text-white' : 'text-gray-100'
                       } group flex w-full gap-4 rounded-md px-2 py-2 text-sm`}
                     >
                       {user.image ? (
@@ -90,7 +90,7 @@ export default function SignedInMenu({ user }: SignedInMenuProps) {
               {({ active }) => (
                 <button
                   className={`${
-                    active ? 'bg-blue-500 text-white' : 'text-gray-100'
+                    active ? 'bg-primary text-white' : 'text-gray-100'
                   } group flex w-full items-center rounded-md px-2 py-2 text-md`}
                   onClick={() => signOut()}
                 >
