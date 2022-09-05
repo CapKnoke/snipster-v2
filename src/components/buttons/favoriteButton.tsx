@@ -14,6 +14,7 @@ export default function FavoriteButton() {
   const favoriteMutation = trpc.useMutation(['snippet.favorite']);
 
   const handleFavorite = async () => {
+    const utils = trpc.useContext();
     if (snippetState.snippet) {
       setPending(true);
       favoriteMutation.mutate(
@@ -25,6 +26,7 @@ export default function FavoriteButton() {
           onSuccess(data) {
             dispatch({ type: SnippetTypes.Favorite, payload: !snippetState.favorited });
             dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites });
+            utils.invalidateQueries(['snippet.byId']);
           },
           onSettled() {
             setPending(false);
@@ -34,10 +36,14 @@ export default function FavoriteButton() {
     }
   };
   if (pending) {
-    return <div className="btn btn-circle loading btn-ghost" />
+    return <div className="btn btn-circle loading btn-ghost" />;
   }
   return (
-    <label className={`btn btn-circle btn-ghost swap ${snippetState.isOwnSnippet || !userState.user ? ' btn-disabled' : ''}`}>
+    <label
+      className={`btn btn-circle btn-ghost swap ${
+        snippetState.isOwnSnippet || !userState.user ? ' btn-disabled' : ''
+      }`}
+    >
       <input
         type="checkbox"
         onChange={handleFavorite}

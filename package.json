@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db": "pscale connect snipster main --port 3309"
+    "db": "pscale connect snipster main --port 3309",
+    "db:dev": "pscale connect snipster dev --port 3310"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

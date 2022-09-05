@@ -15,6 +15,7 @@ export default function VoteButton() {
   const voteMutation = trpc.useMutation(['snippet.vote']);
 
   const handleVote = async () => {
+    const utils = trpc.useContext();
     if (snippetState.snippet) {
       setPending(true);
       voteMutation.mutate(
@@ -26,6 +27,7 @@ export default function VoteButton() {
           onSuccess(data) {
             dispatch({ type: SnippetTypes.Vote, payload: !snippetState.voted });
             dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes });
+            utils.invalidateQueries(['snippet.byId']);
           },
           onSettled() {
             setPending(false);
