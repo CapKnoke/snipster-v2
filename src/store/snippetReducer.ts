@@ -9,7 +9,6 @@ export type InitialSnippetStateType = {
   votes: number | null;
   favorites: number | null;
   isOwnSnippet: boolean;
-  errors: boolean;
 };
 
 export const initialSnippetState = {
