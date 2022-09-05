@@ -41,7 +41,10 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
 
   useEffect(() => {
     if (session && snippetQuery.isSuccess) {
-      dispatch({ type: SnippetTypes.Vote, payload: isVoted(snippetQuery.data, session.user.id) });
+      dispatch({
+        type: SnippetTypes.Vote,
+        payload: isVoted(snippetQuery.data, session.user.id)
+      });
       dispatch({
         type: SnippetTypes.Favorite,
         payload: isFavorited(snippetQuery.data, session.user.id),
