@@ -47,7 +47,6 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
         payload: isFavorited(snippetQuery.data, session.user.id),
       });
     }
-    snippetQuery.refetch()
   }, [status, snippetQuery.status]);
 
   if (snippetQuery.error) {
@@ -59,7 +58,6 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
   }
 
   return <SnippetDetail />;
-
 }
 
 export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string }>) {
