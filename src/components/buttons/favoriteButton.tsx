@@ -12,9 +12,9 @@ export default function FavoriteButton() {
   } = useContext(AppContext);
   const [pending, setPending] = useState(false);
   const favoriteMutation = trpc.useMutation(['snippet.favorite']);
+  const utils = trpc.useContext();
 
   const handleFavorite = async () => {
-    const utils = trpc.useContext();
     if (snippetState.snippet) {
       setPending(true);
       favoriteMutation.mutate(

@@ -10,12 +10,11 @@ export default function VoteButton() {
     state: { snippetState, userState },
     dispatch,
   } = useContext(AppContext);
-
   const [pending, setPending] = useState(false);
   const voteMutation = trpc.useMutation(['snippet.vote']);
+  const utils = trpc.useContext();
 
   const handleVote = async () => {
-    const utils = trpc.useContext();
     if (snippetState.snippet) {
       setPending(true);
       voteMutation.mutate(
