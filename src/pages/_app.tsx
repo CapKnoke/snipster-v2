@@ -8,6 +8,7 @@ import { withTRPC } from '@trpc/next';
 import superjson from 'superjson';
 import type { SSRContext } from '@utils/trpc';
 import type { AppRouter } from '@server/routers/_app';
+import AppProvider from 'src/store/context';
 import MainLayout from '@components/layouts/mainLayout';
 import '../styles/globals.css';
 
@@ -23,7 +24,13 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
   const getLayout = Component.getLayout ?? ((page) => <MainLayout>{page}</MainLayout>);
   const layout = getLayout(<Component {...pageProps} />);
 
-  return <SessionProvider session={session}>{layout}</SessionProvider>;
+  return (
+  <SessionProvider session={session}>
+    <AppProvider >
+      {layout}
+    </AppProvider>
+  </SessionProvider>
+  );
 }
 
 function getBaseUrl() {

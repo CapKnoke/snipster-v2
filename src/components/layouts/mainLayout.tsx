@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useContext, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -6,16 +6,23 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { HomeIcon, UserIcon, CodeIcon } from '@heroicons/react/outline';
 import UserMenu from '@features/userMenu';
 import logo from 'public/logo.svg'
-import { Session } from 'next-auth';
 import { useSession } from 'next-auth/react';
+import { AppContext } from 'src/store/context';
+import { SessionTypes } from 'src/store/sessionReducer';
 
 type MainLayoutProps = {
-  session?: Session;
   children: ReactElement;
 };
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
+  const { dispatch } = useContext(AppContext)
+  useEffect(() => {
+    dispatch({ type: SessionTypes.SetStatus, payload: status})
+    if (session) {
+      dispatch({ type: SessionTypes.SetUser, payload: session.user});
+    }
+  }, [status])
   return (
     <div className="min-h-screen flex flex-col">
       <Head>
@@ -37,7 +44,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </a>
           </Link>
         </div>
-        <UserMenu session={session} status={status} />
+        <UserMenu />
       </div>
       <div className="flex flex-grow flex-col-reverse lg:flex-row">
         <div className="flex sticky bottom-0 lg:fixed lg:flex-col lg:h-[calc(100vh-5rem)] justify-center items-center bg-neutral p-4 z-10">

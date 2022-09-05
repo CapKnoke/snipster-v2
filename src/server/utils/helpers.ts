@@ -130,15 +130,15 @@ export const getUnvoteSnippetData = (ctx: Context) =>
   });
 
 // COMMENT HELPERS
-export const getCreateCommentData = ({ data }: CreateCommentInput, ctx: Context) =>
+export const getCreateCommentData = ({ data, snippetId }: CreateCommentInput, ctx: Context) =>
   Prisma.validator<Prisma.CommentCreateInput>()({
     text: data.text,
     author: { connect: { id: ctx.userId } },
-    snippet: { connect: { id: data.snippetId } },
+    snippet: { connect: { id: snippetId } },
     events: {
       create: {
         user: { connect: { id: ctx.userId } },
-        targetSnippet: { connect: { id: data.snippetId } },
+        targetSnippet: { connect: { id: snippetId } },
         actionType: 'COMMENT_SNIPPET',
       },
     },

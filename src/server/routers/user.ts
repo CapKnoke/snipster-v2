@@ -115,6 +115,7 @@ export const userRouter = createRouter()
         data: { ...input.data },
         select: defaultUserSelect,
       });
+      ctx.res?.revalidate(`/users/${input.id}`);
       return updatedUser;
     },
   })
@@ -147,6 +148,7 @@ export const userRouter = createRouter()
           : getFollowUserData(ctx),
         select: followUserSelect,
       });
+      ctx.res?.revalidate(`/users/${input.id}`);
       return updatedUser;
     },
   });

@@ -54,6 +54,10 @@ export const snippetRouter = createRouter()
       return snippetById;
     },
   })
+
+
+
+
   .query('eventsById', {
     input: idInput,
     async resolve({ input }) {
@@ -135,6 +139,7 @@ export const snippetRouter = createRouter()
         data: hasVoted ? getUnvoteSnippetData(ctx) : getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
+      ctx.res?.revalidate(`/snippets/${input.id}`);
       return votedSnippet;
     },
   })
@@ -164,6 +169,7 @@ export const snippetRouter = createRouter()
         data: hasFavorited ? getUnfavoriteSnippetData(ctx) : getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
+      ctx.res?.revalidate(`/snippets/${input.id}`);
       return favoritedSnippet;
     },
   })
@@ -197,6 +203,7 @@ export const snippetRouter = createRouter()
           message: reason,
         });
       });
+      ctx.res?.revalidate(`/snippets/${input.id}`);
       return { id: input.id };
     },
   });

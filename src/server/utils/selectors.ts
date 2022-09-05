@@ -18,6 +18,8 @@ export const previewSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
   title: true,
   code: true,
   language: true,
+  authorId: true,
+  votes: { select: { id: true } },
   _count: {
     select: {
       votes: true,
@@ -26,6 +28,7 @@ export const previewSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
       comments: true,
     },
   },
+  public: true,
   createdAt: true,
 });
 
@@ -84,8 +87,19 @@ export const defaultSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
   code: true,
   language: true,
   description: true,
+  authorId: true,
   author: {
     select: defaultUserSelect
+  },
+  votes: {
+    select: {
+      userId: true
+    }
+  },
+  favorites: {
+    select: {
+      userId: true
+    }
   },
   _count: {
     select: {
@@ -96,7 +110,6 @@ export const defaultSnippetSelect = Prisma.validator<Prisma.SnippetSelect>()({
     },
   },
   createdAt: true,
-  deleted: true,
   public: true,
 });
 
