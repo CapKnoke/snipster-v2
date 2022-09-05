@@ -16,7 +16,7 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
   const {
     state: {
       userState: { user },
-      snippetState: { snippet, errors },
+      snippetState: { snippet },
     },
     dispatch,
   } = useContext(AppContext);
