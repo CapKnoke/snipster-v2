@@ -24,7 +24,7 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
   const snippetQuery = trpc.useQuery(['snippet.byId', { id }], {
     enabled: !!id,
     retryOnMount: true,
-    retry: false,
+    retry: 3,
     onSuccess(data) {
       dispatch({ type: SnippetTypes.Set, payload: data });
       if (user) {
