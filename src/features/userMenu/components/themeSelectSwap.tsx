@@ -1,18 +1,14 @@
-import React, { Dispatch, SetStateAction, ChangeEventHandler } from 'react';
+import React, { useContext } from 'react';
 import { MoonIcon, SunIcon } from '@heroicons/react/outline';
+import { AppContext } from 'src/store/context';
 
-type SelectFieldProps = {
-  theme: 'Light' | 'Dark';
-  setTheme: Dispatch<SetStateAction<'Light' | 'Dark'>>;
-};
-
-export default function ThemeSelectSwap({ theme, setTheme }: SelectFieldProps) {
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setTheme(e.target.checked ? 'Light' : 'Dark');
-  }
+export default function ThemeSelectSwap() {
+  const {
+    state: { sessionState },
+  } = useContext(AppContext);
   return (
     <label className="swap swap-rotate btn-circle btn btn-ghost">
-      <input type="checkbox" onChange={handleChange} checked={theme === 'Light'} />
+      <input type="checkbox" />
       <SunIcon className="swap-on w-6 h-6" />
       <MoonIcon className="swap-off w-6 h-6" />
     </label>

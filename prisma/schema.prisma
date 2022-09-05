@@ -44,7 +44,7 @@ model User {
   image         String?
   bio           String?   @db.VarChar(255)
   role          Role      @default(USER)
-  theme         Theme     @default(System)
+  theme         Theme     @default(system)
   sessions      Session[]
   accounts      Account[]
 
@@ -174,7 +174,7 @@ enum ActionType {
 }
 
 enum Theme {
-  System
-  Light
-  Dark
+  system
+  light
+  dark
 }

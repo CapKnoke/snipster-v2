@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { createRouter } from '@server/createRouter';
 import { prisma } from '@server/prisma';
-import { createCommentInput, idInput, replyCommentInput } from '@server/utils/schemas';
+import { createCommentInput, replyCommentInput, snippetIdInput } from '@server/utils/schemas';
 import {
   getCreateCommentData,
   getLikeCommentData,
@@ -24,6 +24,7 @@ export const commentRouter = createRouter()
         data: getCreateCommentData(input, ctx),
         select: { id: true },
       });
+      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
       return createdComment;
     },
   })
@@ -40,11 +41,12 @@ export const commentRouter = createRouter()
         data: getReplyCommentData(input, ctx),
         select: { id: true },
       });
+      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
       return reply;
     },
   })
   .mutation('like', {
-    input: idInput,
+    input: snippetIdInput,
     async resolve({ input, ctx }) {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -69,11 +71,12 @@ export const commentRouter = createRouter()
         data: hasLiked ? getUnlikeCommentData(ctx) : getLikeCommentData(ctx),
         select: likeCommentSelect,
       });
+      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
       return likedComment;
     },
   })
   .mutation('delete', {
-    input: idInput,
+    input: snippetIdInput,
     async resolve({ input, ctx }) {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -107,6 +110,7 @@ export const commentRouter = createRouter()
           message: reason,
         });
       });
+      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
       return { id: input.id };
     },
   });

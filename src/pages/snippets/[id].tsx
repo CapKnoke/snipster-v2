@@ -1,31 +1,70 @@
+import { useContext, useEffect } from 'react';
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from 'next';
+import { useSession } from 'next-auth/react';
 import { createSSGHelpers } from '@trpc/react/ssg';
 import superjson from 'superjson';
 import { prisma } from '@server/prisma';
-import { createContext } from '@server/context';
+import { createContext as createServerContext } from '@server/context';
 import { appRouter } from '@server/routers/_app';
 import { trpc } from '@utils/trpc';
+import { isFavorited, isVoted } from '@features/snippetDetail/utils/snippetActionUtils';
 import SnippetDetail from '@features/snippetDetail';
+import { AppContext } from 'src/store/context';
+import { SnippetTypes } from 'src/store/snippetReducer';
 
-export default function Snippet({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const {
+    state: {
+      userState: { user },
+      snippetState: { snippet },
+    },
+    dispatch,
+  } = useContext(AppContext);
+  const { data: session, status } = useSession();
   const snippetQuery = trpc.useQuery(['snippet.byId', { id }], {
     enabled: !!id,
     retryOnMount: true,
     retry: false,
+    onSuccess(data) {
+      dispatch({ type: SnippetTypes.Set, payload: data });
+      if (user) {
+        dispatch({ type: SnippetTypes.SetOwnSnippet, payload: data.authorId === user.id });
+        dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites})
+        dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes})
+      }
+      return data;
+    },
+    onError(err) {
+      console.log(err.message);
+    },
   });
-  if (snippetQuery.isLoading) {
+
+  useEffect(() => {
+    if (session && snippetQuery.isSuccess) {
+      dispatch({ type: SnippetTypes.Vote, payload: isVoted(snippetQuery.data, session.user.id) });
+      dispatch({
+        type: SnippetTypes.Favorite,
+        payload: isFavorited(snippetQuery.data, session.user.id),
+      });
+    }
+  }, [status, snippetQuery.status]);
+
+  if (snippetQuery.error) {
+    return <div>{snippetQuery.error.message}</div>;
+  }
+
+  if (!snippet) {
     return <div>Loading...</div>;
   }
-  if (snippetQuery.isSuccess) {
-    return <SnippetDetail snippet={snippetQuery.data} />;
-  }
-  return <div>Error</div>;
+
+  return <SnippetDetail />;
+
 }
 
-export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string; }>) {
+export async function getStaticProps(ctx: GetStaticPropsContext<{ id: string }>) {
   const ssg = createSSGHelpers({
     router: appRouter,
-    ctx: await createContext(),
+    ctx: await createServerContext(),
     transformer: superjson,
   });
   const id = ctx.params?.id as string;

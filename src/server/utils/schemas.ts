@@ -11,8 +11,8 @@ export const createSnippetInput = z.object({
 });
 
 export const createCommentInput = z.object({
+  snippetId: z.string().cuid(),
   data: z.object({
-    snippetId: z.string().cuid(),
     text: z.string().min(1).max(1024),
   })
 });
@@ -36,8 +36,14 @@ export const idInput = z.object({
   id: z.string().cuid(),
 });
 
+export const snippetIdInput = z.object({
+  id: z.string().cuid(),
+  snippetId: z.string().cuid(),
+});
+
 export type CreateSnippetInput = z.infer<typeof createSnippetInput>;
 export type CreateCommentInput = z.infer<typeof createCommentInput>;
 export type ReplyCommentInput = z.infer<typeof replyCommentInput>;
 export type EditUserInput = z.infer<typeof editUserInput>;
 export type IdInput = z.infer<typeof idInput>;
+export type SnippetIdInput = z.infer<typeof snippetIdInput>;

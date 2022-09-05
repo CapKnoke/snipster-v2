@@ -6,4 +6,4 @@ export const getInitials = (fullName: string): string => {
     .join('');
 };
 
-export const themeOptions = ['Light', 'Dark', 'System'] as const;
+export const themeOptions = ['light', 'dark', 'system'] as const;
