@@ -23,10 +23,10 @@ export default function FavoriteButton() {
           onError(error) {
             console.log(error.message);
           },
-          onSuccess(data) {
+          async onSuccess(data) {
             dispatch({ type: SnippetTypes.Favorite, payload: !snippetState.favorited });
             dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites });
-            utils.invalidateQueries(['snippet.byId']);
+            await utils.invalidateQueries('snippet.byId');
           },
           onSettled() {
             setPending(false);

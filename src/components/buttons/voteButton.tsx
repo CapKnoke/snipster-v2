@@ -23,10 +23,10 @@ export default function VoteButton() {
           onError(error) {
             console.log(error.message);
           },
-          onSuccess(data) {
+          async onSuccess(data) {
             dispatch({ type: SnippetTypes.Vote, payload: !snippetState.voted });
             dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes });
-            utils.invalidateQueries(['snippet.byId']);
+            await utils.invalidateQueries('snippet.byId');
           },
           onSettled() {
             setPending(false);
