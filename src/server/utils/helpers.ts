@@ -1,6 +1,16 @@
+import { getBaseUrl } from '@pages/_app';
 import { Prisma } from '@prisma/client';
 import { Context } from '@server/context';
 import { CreateSnippetInput, CreateCommentInput, ReplyCommentInput, IdInput } from './schemas';
+
+export const revalidatePage = (targetPath: string) => {
+  const token =  new URLSearchParams();
+  token.set('secret', process.env.SECRET_TOKEN as string)
+  fetch(`${getBaseUrl()}/api/revalidate/${targetPath}?${token.toString()}`)
+    .then(data => data.json())
+    .then(res => console.log(res))
+}
+
 // USER HELPERS
 export const getFollowUserData = (ctx: Context) =>
   Prisma.validator<Prisma.UserUpdateInput>()({

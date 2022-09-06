@@ -11,7 +11,7 @@ export default function FavoriteButton() {
     dispatch,
   } = useContext(AppContext);
   const [pending, setPending] = useState(false);
-  const favoriteMutation = trpc.useMutation(['snippet.favorite']);
+  const favoriteMutation = trpc.useMutation('snippet.favorite');
   const utils = trpc.useContext();
 
   const handleFavorite = async () => {
@@ -26,7 +26,7 @@ export default function FavoriteButton() {
           async onSuccess(data) {
             dispatch({ type: SnippetTypes.Favorite, payload: !snippetState.favorited });
             dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites });
-            await utils.invalidateQueries('snippet.byId');
+            await utils.refetchQueries(['snippet.byId']);
           },
           onSettled() {
             setPending(false);

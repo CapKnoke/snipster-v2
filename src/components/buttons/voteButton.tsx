@@ -11,7 +11,7 @@ export default function VoteButton() {
     dispatch,
   } = useContext(AppContext);
   const [pending, setPending] = useState(false);
-  const voteMutation = trpc.useMutation(['snippet.vote']);
+  const voteMutation = trpc.useMutation('snippet.vote');
   const utils = trpc.useContext();
 
   const handleVote = async () => {
@@ -26,7 +26,7 @@ export default function VoteButton() {
           async onSuccess(data) {
             dispatch({ type: SnippetTypes.Vote, payload: !snippetState.voted });
             dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes });
-            await utils.invalidateQueries('snippet.byId');
+            await utils.refetchQueries(['snippet.byId']);
           },
           onSettled() {
             setPending(false);

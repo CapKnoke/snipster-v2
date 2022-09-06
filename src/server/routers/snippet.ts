@@ -18,8 +18,10 @@ import {
   getUnvoteSnippetData,
   getVoteSnippetData,
   getSnippetById,
+  revalidatePage,
 } from '@server/utils/helpers';
 import { createSnippetInput, idInput } from '@server/utils/schemas';
+import { getBaseUrl } from '@pages/_app';
 
 export const snippetRouter = createRouter()
   // QUERIES
@@ -54,10 +56,6 @@ export const snippetRouter = createRouter()
       return snippetById;
     },
   })
-
-
-
-
   .query('eventsById', {
     input: idInput,
     async resolve({ input }) {
@@ -139,7 +137,7 @@ export const snippetRouter = createRouter()
         data: hasVoted ? getUnvoteSnippetData(ctx) : getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
-      ctx.res?.revalidate(`/snippets/${input.id}`);
+      revalidatePage(`snippets/${votedSnippet.id}`);
       return votedSnippet;
     },
   })
@@ -169,7 +167,7 @@ export const snippetRouter = createRouter()
         data: hasFavorited ? getUnfavoriteSnippetData(ctx) : getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
-      ctx.res?.revalidate(`/snippets/${input.id}`);
+      revalidatePage(`snippets/${favoritedSnippet.id}`);
       return favoritedSnippet;
     },
   })
@@ -203,7 +201,7 @@ export const snippetRouter = createRouter()
           message: reason,
         });
       });
-      ctx.res?.revalidate(`/snippets/${input.id}`);
+      revalidatePage(`snippets/${input.id}`);
       return { id: input.id };
     },
   });
