@@ -7,6 +7,7 @@ import {
   getLikeCommentData,
   getReplyCommentData,
   getUnlikeCommentData,
+  revalidatePage,
 } from '@server/utils/helpers';
 import { likeCommentSelect } from '@server/utils/selectors';
 
@@ -24,7 +25,7 @@ export const commentRouter = createRouter()
         data: getCreateCommentData(input, ctx),
         select: { id: true },
       });
-      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
+      revalidatePage(`snippets/${input.snippetId}`);
       return createdComment;
     },
   })
@@ -41,7 +42,7 @@ export const commentRouter = createRouter()
         data: getReplyCommentData(input, ctx),
         select: { id: true },
       });
-      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
+      revalidatePage(`snippets/${input.snippetId}`);
       return reply;
     },
   })
@@ -71,7 +72,7 @@ export const commentRouter = createRouter()
         data: hasLiked ? getUnlikeCommentData(ctx) : getLikeCommentData(ctx),
         select: likeCommentSelect,
       });
-      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
+      revalidatePage(`snippets/${input.snippetId}`);
       return likedComment;
     },
   })
@@ -110,7 +111,7 @@ export const commentRouter = createRouter()
           message: reason,
         });
       });
-      ctx.res?.revalidate(`/snippets/${input.snippetId}`);
+      revalidatePage(`snippets/${input.snippetId}`);
       return { id: input.id };
     },
   });
