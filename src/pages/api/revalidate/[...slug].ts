@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log(req.query.slug)
   const { slug } = req.query;
   if (req.query.secret !== process.env.SECRET_TOKEN || !slug || typeof slug === 'string') {
     return res.status(401).json({ message: 'Invalid token' });

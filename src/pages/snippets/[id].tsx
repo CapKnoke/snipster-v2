@@ -20,37 +20,31 @@ export default function SnippetPage({ id }: InferGetStaticPropsType<typeof getSt
     },
     dispatch,
   } = useContext(AppContext);
-  const { data: session, status } = useSession();
   const snippetQuery = trpc.useQuery(['snippet.byId', { id }], {
     enabled: !!id,
     retryOnMount: true,
     retry: 3,
-    onSuccess(data) {
-      dispatch({ type: SnippetTypes.Set, payload: data });
-      if (user) {
-        dispatch({ type: SnippetTypes.SetOwnSnippet, payload: data.authorId === user.id });
-        dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites})
-        dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes})
-      }
-      return data;
-    },
     onError(err) {
       console.log(err.message);
     },
   });
 
   useEffect(() => {
-    if (session && snippetQuery.isSuccess) {
+    if (user && snippetQuery.isSuccess) {
       dispatch({
         type: SnippetTypes.Vote,
-        payload: isVoted(snippetQuery.data, session.user.id)
+        payload: isVoted(snippetQuery.data, user.id)
       });
       dispatch({
         type: SnippetTypes.Favorite,
-        payload: isFavorited(snippetQuery.data, session.user.id),
+        payload: isFavorited(snippetQuery.data, user.id),
       });
+      dispatch({ type: SnippetTypes.Set, payload: snippetQuery.data });
+      dispatch({ type: SnippetTypes.SetOwnSnippet, payload: snippetQuery.data.authorId === user.id });
+      dispatch({ type: SnippetTypes.SetFavorites, payload: snippetQuery.data._count.favorites})
+      dispatch({ type: SnippetTypes.SetVotes, payload: snippetQuery.data._count.votes})
     }
-  }, [status, snippetQuery.status]);
+  }, [user, snippetQuery]);
 
   if (snippetQuery.error) {
     return <div>{snippetQuery.error.message}</div>;
