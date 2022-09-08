@@ -23,9 +23,8 @@ export default function FavoriteButton() {
           onError(error) {
             console.log(error.message);
           },
-          async onSuccess(data) {
+          async onSuccess() {
             dispatch({ type: SnippetTypes.Favorite, payload: !snippetState.favorited });
-            dispatch({ type: SnippetTypes.SetFavorites, payload: data._count.favorites });
             await utils.refetchQueries(['snippet.byId']);
           },
           onSettled() {
@@ -35,9 +34,6 @@ export default function FavoriteButton() {
       );
     }
   };
-  if (pending) {
-    return <div className="btn btn-circle loading btn-ghost" />;
-  }
   return (
     <label
       className={`btn btn-circle btn-ghost swap ${

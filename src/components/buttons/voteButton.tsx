@@ -23,9 +23,8 @@ export default function VoteButton() {
           onError(error) {
             console.log(error.message);
           },
-          async onSuccess(data) {
+          async onSuccess() {
             dispatch({ type: SnippetTypes.Vote, payload: !snippetState.voted });
-            dispatch({ type: SnippetTypes.SetVotes, payload: data._count.votes });
             await utils.refetchQueries(['snippet.byId']);
           },
           onSettled() {
@@ -35,11 +34,12 @@ export default function VoteButton() {
       );
     }
   };
-  if (pending) {
-    return <div className="btn btn-circle loading btn-ghost" />
-  }
   return (
-    <label className={`btn btn-circle btn-ghost swap swap-rotate${snippetState.isOwnSnippet || !userState.user ? ' btn-disabled' : ''}`} >
+    <label
+      className={`btn btn-circle btn-ghost swap swap-rotate${
+        snippetState.isOwnSnippet || !userState.user ? ' btn-disabled' : ''
+      }`}
+    >
       <input
         type="checkbox"
         onChange={handleVote}

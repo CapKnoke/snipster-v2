@@ -25,7 +25,7 @@ export const commentRouter = createRouter()
         data: getCreateCommentData(input, ctx),
         select: { id: true },
       });
-      revalidatePage(`snippets/${input.snippetId}`);
+      revalidatePage(`/snippets/${input.snippetId}`);
       return createdComment;
     },
   })
@@ -42,7 +42,7 @@ export const commentRouter = createRouter()
         data: getReplyCommentData(input, ctx),
         select: { id: true },
       });
-      revalidatePage(`snippets/${input.snippetId}`);
+      revalidatePage(`/snippets/${input.snippetId}`);
       return reply;
     },
   })
@@ -72,7 +72,7 @@ export const commentRouter = createRouter()
         data: hasLiked ? getUnlikeCommentData(ctx) : getLikeCommentData(ctx),
         select: likeCommentSelect,
       });
-      revalidatePage(`snippets/${input.snippetId}`);
+      revalidatePage(`/snippets/${input.snippetId}`);
       return likedComment;
     },
   })
@@ -111,7 +111,7 @@ export const commentRouter = createRouter()
           message: reason,
         });
       });
-      revalidatePage(`snippets/${input.snippetId}`);
+      revalidatePage(`/snippets/${input.snippetId}`);
       return { id: input.id };
     },
   });

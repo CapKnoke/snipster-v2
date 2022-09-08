@@ -6,7 +6,7 @@ import { CreateSnippetInput, CreateCommentInput, ReplyCommentInput, IdInput } fr
 export const revalidatePage = (targetPath: string) => {
   const token =  new URLSearchParams();
   token.set('secret', process.env.SECRET_TOKEN as string)
-  fetch(`${getBaseUrl()}/api/revalidate/${targetPath}?${token.toString()}`)
+  fetch(`${getBaseUrl()}/api/revalidate${targetPath}?${token.toString()}`)
     .then(data => data.json())
     .then(res => console.log(res))
 }

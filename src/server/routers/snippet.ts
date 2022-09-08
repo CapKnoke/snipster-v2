@@ -21,7 +21,6 @@ import {
   revalidatePage,
 } from '@server/utils/helpers';
 import { createSnippetInput, idInput } from '@server/utils/schemas';
-import { getBaseUrl } from '@pages/_app';
 
 export const snippetRouter = createRouter()
   // QUERIES
@@ -137,7 +136,7 @@ export const snippetRouter = createRouter()
         data: hasVoted ? getUnvoteSnippetData(ctx) : getVoteSnippetData(ctx),
         select: voteSnippetSelect,
       });
-      revalidatePage(`snippets/${votedSnippet.id}`);
+      revalidatePage(`/snippets/${votedSnippet.id}`);
       return votedSnippet;
     },
   })
@@ -167,7 +166,7 @@ export const snippetRouter = createRouter()
         data: hasFavorited ? getUnfavoriteSnippetData(ctx) : getFavoriteSnippetData(ctx),
         select: favoriteSnippetSelect,
       });
-      revalidatePage(`snippets/${favoritedSnippet.id}`);
+      revalidatePage(`/snippets/${favoritedSnippet.id}`);
       return favoritedSnippet;
     },
   })
@@ -201,7 +200,7 @@ export const snippetRouter = createRouter()
           message: reason,
         });
       });
-      revalidatePage(`snippets/${input.id}`);
+      revalidatePage(`/snippets/${input.id}`);
       return { id: input.id };
     },
   });
